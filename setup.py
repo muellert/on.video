@@ -26,7 +26,10 @@ setup(name='on.video',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'Plone',
+          'PIL',
           'plone.app.dexterity',
+          'collective.autopermission',
           # -*- Extra requirements: -*-
       ],
       extras_require = {
@@ -39,7 +42,6 @@ setup(name='on.video',
       [z3c.autoinclude.plugin]
       target = plone
       """,
-      setup_requires=["PasteScript"],
-      paster_plugins = ["ZopeSkel"],
-
+      #setup_requires=["PasteScript"],
+      #paster_plugins = ["ZopeSkel"],
       )

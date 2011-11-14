@@ -27,13 +27,12 @@ class OnVideoFixture(PloneSandboxLayer):
 
     def setUpPloneSite(self, portal):
         """Run the GS profile for this product"""
-        #self.applyProfile(portal, 'on.video:default')
+        self.applyProfile(portal, 'on.video:default')
 
 
     def tearDownZope(self, app):
         """Uninstall the product and destroy the Zope site"""
-        # Uninstall product
-        #z2.uninstallProduct(app, 'on.video')
+        z2.uninstallProduct(app, 'on.video')
 
 
 ON_VIDEO_FIXTURE = OnVideoFixture()
@@ -50,18 +49,11 @@ class TestOnVideo(unittest.TestCase):
 
     def test_install_on_video(self):
         quickinstaller = getToolByName(self.portal, 'portal_quickinstaller')
-        #self.assertTrue(quickinstaller.isProductInstalled('collective.flowplayer'))
         self.assertTrue(quickinstaller.isProductInstalled('on.video'))
 
-class XXTestIrillViews(unittest.TestCase):
-    layer = ON_VIDEO_FUNCTIONAL_TESTING
-
-    def setUp(self):
-        self.portal = self.layer['portal']
-        self.app = self.layer['app']
-        self.browser = z2.Browser(self.app)
-
-
-
-# resource-type link:
-#http://localhost:9282/01/mnt/Plone/portal_css/IRILL%20Theme/++resource++on.video.stylesheets/carousel.css
+    def test_video_object(self):
+        """Create a video object and inspect its attributes to see whether
+           it conforms to the specs.
+        """
+        1 == 0
+        

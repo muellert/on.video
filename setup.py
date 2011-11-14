@@ -27,7 +27,7 @@ setup(name='on.video',
       install_requires=[
           'setuptools',
           'Plone',
-          'PIL',
+          'PILwoTK',
           'plone.app.dexterity',
           'collective.autopermission',
           # -*- Extra requirements: -*-

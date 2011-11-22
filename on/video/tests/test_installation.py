@@ -3,7 +3,6 @@
 import unittest2 as unittest
 from Products.CMFCore.utils import getToolByName
 
-
 from plone.app.testing import PloneSandboxLayer
 from plone.app.testing import quickInstallProduct
 from plone.app.testing import PLONE_FIXTURE
@@ -40,6 +39,10 @@ ON_VIDEO_INTEGRATION_TESTING = IntegrationTesting(bases=(ON_VIDEO_FIXTURE,), nam
 ON_VIDEO_FUNCTIONAL_TESTING = FunctionalTesting(bases=(ON_VIDEO_FIXTURE,), name="OnVideoFixture:Functional")
 
 
+from zope.component import queryUtility
+from on.video.configuration import IVideoConfiguration
+from on.video import config
+
 class TestOnVideo(unittest.TestCase):
     layer = ON_VIDEO_INTEGRATION_TESTING
 
@@ -51,9 +54,16 @@ class TestOnVideo(unittest.TestCase):
         quickinstaller = getToolByName(self.portal, 'portal_quickinstaller')
         self.assertTrue(quickinstaller.isProductInstalled('on.video'))
 
+    def test_video_config(self):
+        """try to find the config utility and play around"""
+        cu = queryUtility(IVideoConfiguration, name=u"")
+        self.assertNotEqual(cu, None)
+        self.assertEqual(cu.fspath, config.ON_VIDEO_FS_PATH)
+        self.assertEqual(cu.urlbase, config.ON_VIDEO_URL)
+
     def test_video_object(self):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
-        1 == 0
+        
         

@@ -27,7 +27,7 @@
 
   <!-- -*- extra stuff goes here -*- -->
 
-  <utility provides=".interfaces.IVideoConfiguration"
+  <utility provides=".configuration.IVideoConfiguration"
 	   factory=".configuration.VideoConfiguration" />
 
 </configure>

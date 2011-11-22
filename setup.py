@@ -1,7 +1,8 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.1'
+version_file = os.path.join('on', 'video', 'version.txt')
+version = open(version_file).read().strip()
 
 setup(name='on.video',
       version=version,

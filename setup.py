@@ -27,7 +27,7 @@ setup(name='on.video',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          'Plone',
+          'Products.CMFPlone',
           'plone.app.dexterity',
           'collective.autopermission',
           # -*- Extra requirements: -*-

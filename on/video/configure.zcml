@@ -29,15 +29,6 @@
 
   <!-- -*- extra stuff goes here -*- -->
 
-  <!--
-      This registration has been obviated after switching from
-      using a Singleton to using the registry.
- 
-      utility provides=".configuration.IVideoConfiguration"
-	   factory=".configuration.VideoConfiguration" / -->
-
-
-
   <!-- Control panel -->
   <browser:page
       name="on-video-settings"

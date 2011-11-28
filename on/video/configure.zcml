@@ -5,10 +5,12 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     xmlns:grok="http://namespaces.zope.org/grok"
     xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:browser="http://namespaces.zope.org/browser"
     i18n_domain="on.video">
 
   <!-- Include configuration for dependencies listed in setup.py -->
   <includeDependencies package="." />
+  <!--include package="plone.app.registry" / -->
 
   <!-- Grok the package to initialise schema interfaces and content classes -->
   <grok:grok package="." />
@@ -27,7 +29,21 @@
 
   <!-- -*- extra stuff goes here -*- -->
 
-  <utility provides=".configuration.IVideoConfiguration"
-	   factory=".configuration.VideoConfiguration" />
+  <!--
+      This registration has been obviated after switching from
+      using a Singleton to using the registry.
+ 
+      utility provides=".configuration.IVideoConfiguration"
+	   factory=".configuration.VideoConfiguration" / -->
+
+
+
+  <!-- Control panel -->
+  <browser:page
+      name="on-video-settings"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      class=".configuration.VideoConfigurationControlPanel"
+      permission="cmf.ManagePortal"
+      />
 
 </configure>

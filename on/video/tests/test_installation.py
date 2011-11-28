@@ -13,9 +13,7 @@ from plone.app.testing import applyProfile
 from plone.app.testing import setRoles
 
 from plone.testing import z2
-
-#from plone.app.viewletmanager.interfaces import IViewletSettingsStorage
-#from zope.component import getUtilitiesFor
+from plone.registry.interfaces import IRegistry
 
 class OnVideoFixture(PloneSandboxLayer):
     defaultBases = (PLONE_FIXTURE,)
@@ -50,16 +48,25 @@ class TestOnVideo(unittest.TestCase):
         self.portal = self.layer['portal']
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
 
-    def test_install_on_video(self):
+    def test_01_install_on_video(self):
         quickinstaller = getToolByName(self.portal, 'portal_quickinstaller')
         self.assertTrue(quickinstaller.isProductInstalled('on.video'))
 
-    def test_video_config(self):
+    def XXtest_02_video_config(self):
         """try to find the config utility and play around"""
         cu = queryUtility(IVideoConfiguration, name=u"")
         self.assertNotEqual(cu, None)
         self.assertEqual(cu.fspath, config.ON_VIDEO_FS_PATH)
         self.assertEqual(cu.urlbase, config.ON_VIDEO_URL)
+
+    def test_02_video_config_registry(self):
+        """Verify that the default values in the registry have been set."""
+        registry = queryUtility(IRegistry)
+        self.assertNotEqual(registry, None)
+        settings = registry.forInterface(IVideoConfiguration)
+        self.assertEqual(settings.fspath, config.ON_VIDEO_FS_PATH)
+        self.assertEqual(settings.urlbase, config.ON_VIDEO_URL)
+
 
     def test_video_object(self):
         """Create a video object and inspect its attributes to see whether

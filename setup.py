@@ -30,6 +30,7 @@ setup(name='on.video',
           'Products.CMFPlone',
           'plone.app.dexterity',
           'collective.autopermission',
+          'plone.app.registry',
           # -*- Extra requirements: -*-
       ],
       extras_require = {

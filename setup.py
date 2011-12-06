@@ -29,6 +29,8 @@ setup(name='on.video',
           'setuptools',
           'Products.CMFPlone',
           'plone.app.dexterity',
+          'plone.app.referenceablebehavior',
+          'plone.app.relationfield',
           'collective.autopermission',
           'plone.app.registry',
           # -*- Extra requirements: -*-

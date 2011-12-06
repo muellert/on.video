@@ -1,0 +1,42 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="on.video">
+<body>
+
+<metal:content-core fill-slot="content-core">
+    <metal:content-core define-macro="content-core">
+
+        <div class="on-video-thumbnail">
+            <img src="#" alt="#" title="#"
+	         tal:attributes="src view/thumbnailurl;
+	                         alt context/title;
+	                         title context/description" />
+	    <br />
+	    "<span class="video-title" tal:content="context/title">Caption</span>"
+	      <br />by
+	    <span class="onvideo-director" tal:content="context/director">director</span> on
+	      <span class="onvideo-recorded" tal:content="context/recorded">2011-01-01</span>,
+		recorded at
+	      <span class="onvideo-place" tal:content="context/place">place</span>
+        </div>
+
+	<tal:downloadlinks tal:condition="view/videofiles">
+	<h3>Download this video</h3>
+	<div class="video-links"
+	     tal:repeat="video view/videofiles">
+	         <a href="#" tal:attributes="href python: video.url"
+	            tal:content="python: video.type">Link to video file</a><br />
+	</div>
+	</tal:downloadlinks>
+	<div class="video-description"
+	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
+	         long description here</div>
+      </metal:content-core>
+</metal:content-core>
+
+</body>
+</html>

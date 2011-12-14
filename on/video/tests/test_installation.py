@@ -43,7 +43,9 @@ from zope.component import adapts, getMultiAdapter
 from on.video.configuration import IVideoConfiguration
 from on.video import config
 
-class TestOnVideo(unittest.TestCase):
+class TestOnVideoConfig(unittest.TestCase):
+    """Test the configuration of the product."""
+
     layer = ON_VIDEO_INTEGRATION_TESTING
 
     def setUp(self):
@@ -93,9 +95,55 @@ class TestOnVideo(unittest.TestCase):
         self.failUnless('fspath' in IVideoConfiguration)
         self.assertEquals(fspath.value, config.ON_VIDEO_FS_PATH)
 
-    def test_video_object(self):
+# now create some mock files and directories
+
+import os
+import tempfile
+import shutil
+
+from Testing.testbrowser import Browser
+from zope.publisher.browser import TestRequest
+
+class TestOnVideoHandling(unittest.TestCase):
+    """Test the code for handling video objects, views etc."""
+
+    layer = ON_VIDEO_INTEGRATION_TESTING
+
+    def setUp(self):
+        self.portal = self.layer['portal']
+        setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        registry = queryUtility(IRegistry)
+        self.settings = registry.forInterface(IVideoConfiguration)
+        self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
+        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_1.metadata')
+        shutil.copy(sampledata, self.td)
+        self.settings.fspath = unicode(self.td)
+        self.browser_ = Browser()
+        self.request_ = TestRequest()
+
+
+    def tearDown(self):
+        """remove the temp stuff"""
+        shutil.rmtree(self.td)
+
+    def test_01_create_video_object(self):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
+        #registry = queryUtility(IRegistry)
+        #settings = registry.forInterface(IVideoConfiguration)
+        v = self.portal.invokeFactory('on.video.Video', 'video1', title=u"My Sample Video")
+        self.failUnless(v in self.portal)
         
+
+    def test_02_show_video(self):
+        """Access the created video via the browser and see whether the metadata
+           file is being parsed correctly.
+        """
         
+
+        
+
+
+
+# see http://pastie.org/3006184 for a usage problem

@@ -24,12 +24,14 @@
 	      <span class="onvideo-place" tal:content="context/place">place</span>
         </div>
 
+	<div class="playingtime_label">Playing Time: </div>
+	<div class="playingtime" tal:content="context/playingtime" />
 	<tal:downloadlinks tal:condition="view/videofiles">
-	<h3>Download this video</h3>
+	<h3>Download this video in the following formats:</h3>
 	<div class="video-links"
 	     tal:repeat="video view/videofiles">
 	         <a href="#" tal:attributes="href python: video.url"
-	            tal:content="python: video.type">Link to video file</a><br />
+	            tal:content="python: video.format">Link to video file</a><br />
 	</div>
 	</tal:downloadlinks>
 	<div class="video-description"

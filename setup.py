@@ -28,7 +28,7 @@ setup(name='on.video',
       install_requires=[
           'setuptools',
           'Products.CMFPlone',
-          'plone.app.dexterity',
+          'plone.app.dexterity [grok]',
           'plone.app.referenceablebehavior',
           'plone.app.relationfield',
           'collective.autopermission',

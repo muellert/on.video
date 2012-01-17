@@ -52,11 +52,11 @@ class TestOnVideoConfig(unittest.TestCase):
         self.portal = self.layer['portal']
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
 
-    def test_01_install_on_video(self):
+    def test_install_on_video(self):
         quickinstaller = getToolByName(self.portal, 'portal_quickinstaller')
         self.assertTrue(quickinstaller.isProductInstalled('on.video'))
 
-    def test_02_video_config_registry(self):
+    def test_video_config_registry(self):
         """Verify that the default values in the registry have been set."""
         registry = queryUtility(IRegistry)
         self.assertNotEqual(registry, None)
@@ -64,14 +64,14 @@ class TestOnVideoConfig(unittest.TestCase):
         self.assertEqual(settings.fspath, config.ON_VIDEO_FS_PATH)
         self.assertEqual(settings.urlbase, config.ON_VIDEO_URL)
 
-    def test_03_video_controlpanel_view(self):
+    def test_video_controlpanel_view(self):
         """Can we see the control panel?"""
         view = getMultiAdapter((self.portal, self.portal.REQUEST), 
                                name="on-video-settings")
         view = view.__of__(self.portal)
         self.failUnless(view())
 
-    def test_04_video_control_panel_protected(self):
+    def test_video_control_panel_protected(self):
         """Can only we access the control panel?"""
         from AccessControl import Unauthorized
         setRoles(self.portal, TEST_USER_ID, ['Member'])
@@ -79,7 +79,7 @@ class TestOnVideoConfig(unittest.TestCase):
                           self.portal.restrictedTraverse,
                           '@@on-video-settings')
 
-    def test_05_video_control_panel_read_url(self):
+    def test_video_control_panel_read_url(self):
         """Retrieve the URL from the control panel"""
         registry = queryUtility(IRegistry)
         urlbase = registry.records[
@@ -87,7 +87,7 @@ class TestOnVideoConfig(unittest.TestCase):
         self.failUnless('urlbase' in IVideoConfiguration)
         self.assertEquals(urlbase.value, config.ON_VIDEO_URL)
 
-    def test_05_video_control_panel_read_fs(self):
+    def test_video_control_panel_read_fs(self):
         """Retrieve the file system path from the control panel"""
         registry = queryUtility(IRegistry)
         fspath = registry.records[
@@ -126,7 +126,7 @@ class TestOnVideoHandling(unittest.TestCase):
         """remove the temp stuff"""
         shutil.rmtree(self.td)
 
-    def test_01_create_video_object(self):
+    def test_create_video_object(self):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
@@ -136,13 +136,22 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(v in self.portal)
         
 
-    def test_02_show_video(self):
+    def test_inspect_video(self):
         """Access the created video via the browser and see whether the metadata
            file is being parsed correctly.
         """
-        
+        from on.video import video
+        # What is the correct API?
+        #import pdb; pdb.set_trace()
+        v = video.IVideo()
+        print "v: ", v
+        self.failUnless(str(v) == 'bla')
 
-        
+    def test_video_format_thingy(self):
+        from on.video.video import vVideo
+
+        v = vVideo("bla.ogv", "OGV")
+        self.failUnless(0 == 1)
 
 
 

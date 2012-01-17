@@ -65,7 +65,9 @@ from plone.registry.interfaces import IRegistry
 from on.video.configuration import IVideoConfiguration
 
 class vVideo(object):
-
+    """Represent one (url, formatspec) pair for a given video.
+       Used to build the list of downloadable Videos.
+    """
     def __init__(self, url, formatspec):
         self.url = url
         self.format = formatspec

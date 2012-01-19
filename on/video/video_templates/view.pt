@@ -9,7 +9,7 @@
 
 <metal:content-core fill-slot="content-core">
     <metal:content-core define-macro="content-core">
-
+      <tal:videofiles tal:define="videos view/videofiles">
         <div class="on-video-thumbnail">
 	  <video width="640" height="360" controls>
 	  <source src="__VIDEO__.mp4"  type="video/mp4" />
@@ -35,20 +35,26 @@
 	      <span class="onvideo-place" tal:content="context/place">place</span>
         </div>
 
-	<div class="playingtime_label">Playing Time: </div>
-	<div class="playingtime" tal:content="context/playingtime" />
+	<div class="playingtime_label">Playing Time: 
+	    <span class="playingtime" tal:content="context/playingtime" />
+        </div>
 	<tal:downloadlinks tal:condition="view/videofiles">
-	<h3>Download this video in the following formats:</h3>
-	<div class="video-links"
-	     tal:repeat="video view/videofiles">
-	         <a href="#" tal:attributes="href python: video.url"
-	            tal:content="python: video.format">Link to video file</a><br />
+	<div class="video-download-block">
+	  <div>Download this video:</div>
+	    <ul class="video-downloadlinks-urllist">
+	      <li class="video-download-link"
+	         tal:repeat="video videos">
+	             <a href="#" tal:attributes="href python: video.url"
+	                tal:content="python: video.format">Link to video file</a>
+	      </li>
+	    </ul>
 	</div>
 	</tal:downloadlinks>
 	<div class="video-description"
 	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
 	         long description here</div>
-      </metal:content-core>
+      </tal:videofiles>
+    </metal:content-core>
 </metal:content-core>
 
 </body>

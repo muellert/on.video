@@ -4,6 +4,7 @@ from five import grok
 from zope import schema
 
 from plone.directives import form, dexterity
+from plone.memoize.instance import memoize
 
 from plone.app.textfield import RichText
 
@@ -56,7 +57,6 @@ class IVideo(form.Schema):
 
 
 import os.path
-#import csv
 import re
 from Acquisition import aq_inner
 from zope.component import queryUtility
@@ -76,18 +76,22 @@ class vVideo(object):
 class View(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
+    grok.name('view')
 
     """Basic Video View"""
 
-    def videoMetaData(self, context):
+    @memoize
+    def readVideoMetaData(self, context):
         """Read the video.metadata file to set some parameters. Helper function."""
         print "setting up video meta data for ", context
+        import pdb; pdb.set_trace()
         registry = queryUtility(IRegistry)
         settings = registry.forInterface(IVideoConfiguration)
+        context.urlbase = settings.urlbase
         if settings.urlbase[-1] != '/':
-            context.urlbase = context.urlbase + '/'
-        bpath = os.path.join(settings.fspath, context.filename, '.')
-        meta_path = bpath + "metadata"
+            settings.urlbase = settings.urlbase + '/'
+        bpath = os.path.join(settings.fspath, context.filename)
+        meta_path = bpath + ".metadata"
         if not os.path.exists(meta_path):
             print "no metadata for ", context
             context.thumbnailurl = None
@@ -121,33 +125,40 @@ class View(grok.View):
             if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
                 context.directplay = settings.urlbase + vf
         # now read the alternative formats list:
-        urls = []
+        videos = []
         for row in mdfile:
+            print "current row: -->%s<--" % row
+            if ':' not in row:
+                break
             k, v = row.split(':', 1)
             v = v.strip()
-            print "checking filenames: ", os.path.join(settings.fsbase, v)
-            if os.path.exists(os.path.join(settings.fsbase, v)):
-                files.append(vVideo("".join(settings.baseurl, v), k))
-        self.urls = urls
+            print "checking filenames: ", os.path.join(settings.fspath, v)
+            if os.path.exists(os.path.join(settings.fspath, v)):
+                videos.append(vVideo(settings.urlbase + v, k))
+        context.videos = videos
+
+    @memoize
+    def maybeReadMetaData(self, context):
+        """Read in the metadata file, but only if it hasn't been read in yet."""
+        try:
+            if len(context.videos) == 0:
+                self.readVideoMetaData(context)
+            print "context now has these urls: ", context.videos
+        except:
+            self.readVideoMetaData(context)
+        return context.videos
 
     def videofiles(self):
         """Return a list of video urls"""
         context = aq_inner(self.context)
-        try:
-            x = context.urls
-        except:
-            self.videoMetaData(context)
-        #if not context.has_attr('urls'):
-        #    context.videoMetaData(context)
-        return context.urls
+        print "video:videofiles(%s, context=%s)" % (str(self), str(context))
+        self.maybeReadMetaData(context)
+        return context.videos
 
     def thumbnailurl(self):
         """Calculate the URL to the thumbnail"""
         context = aq_inner(self.context)
-        try:
-            x = context.urls
-        except:
-            self.videoMetaData(context)
+        self.maybeReadMetaData(context)
         if context.thumbnailurl is not None:
             return context.thumbnailurl;
         else:
@@ -156,8 +167,5 @@ class View(grok.View):
     def playingtime(self):
         """return the string for the playing time, if any"""
         context = aq_inner(self.context)
-        try:
-            x = context.urls
-        except:
-            self.videoMetaData()
+        self.maybeReadMetaData(context)
         return context.playing_time

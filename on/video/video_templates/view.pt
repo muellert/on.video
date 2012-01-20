@@ -45,7 +45,7 @@
 	      <li class="video-download-link"
 	         tal:repeat="video videos">
 	             <a href="#" tal:attributes="href python: video.url"
-	                tal:content="python: video.format">Link to video file</a>
+	                tal:content="python: video.displayformat">Link to video file</a>
 	      </li>
 	    </ul>
 	</div>

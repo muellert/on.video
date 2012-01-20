@@ -65,13 +65,85 @@ from plone.registry.interfaces import IRegistry
 
 from on.video.configuration import IVideoConfiguration
 
+filetypes = {'mp4': 'mpeg',
+             'mpeg': 'mpeg',
+             'flv': 'flash',
+             'swf': 'flash',
+             'ogv': 'ogg',
+             'webm': 'webm',
+             'avi': 'avi',
+             'mov': 'mov',
+             }
+
+
 class vVideo(object):
     """Represent one (url, formatspec) pair for a given video.
        Used to build the list of downloadable Videos.
     """
     def __init__(self, url, formatspec):
         self.url = url
-        self.format = formatspec
+        self.displayformat = formatspec
+        self.filetype = self.calculateFileType(url)
+
+    @classmethod
+    def calculateFileType(cls, name):
+        """Do the windows thing and 'determine' the file type from the extension."""
+        name = name.lower()
+        slashpos = name.rfind('/')
+        if slashpos >= 0:
+            lastpart = name[slashpos + 1:]
+        else:
+            lastpart = name
+        dotpos = lastpart.rfind('.')
+        if dotpos >= 0:
+            extension = lastpart[dotpos + 1:]
+        else:
+            extension = ''
+        if extension in filetypes.keys():
+            ftype = filetypes[extension]
+        else:
+            ftype = 'unknown'
+        return ftype
+
+
+# I don't have a clue about videos - suggestions for improvements
+# are highly welcome!
+
+dl_extensions = ('ogg', 'webm', 'mpeg', 'avi', 'mov', 'flash', 'unknown')
+player_extensions = ('mpeg', 'ogg', 'webm', 'avi', 'mov', 'flash', 'unknown')
+
+
+def sortVideosList(videos, desiredsorting):
+    """Sort the videos according to the list of extensions in
+       'desiredsorting'. No special sorting algorithm used,
+       due to the estimated small size of the list.
+    """
+    result = []
+    for ext in desiredsorting:
+        print "sortVideosList: videos = ", videos
+        video = 0
+        while len(videos) > 0 and video < len(videos):
+            print "video: ", video
+            if videos[video].filetype == ext:
+                result.append(videos[video])
+                videos.pop(video)
+            else:
+                video = video + 1
+    return result
+
+def sortVideosForDownload(videos):
+    """Sort the videos for download, according to freeness and
+       features. The 'videos' parameter is a list of vVideo
+       objects.
+    """
+    return sortVideosList(videos, dl_extensions)
+
+def sortVideosForPlayer(videos):
+    """Sort the videos for download, according to freeness and
+       features. The 'videos' parameter is a list of vVideo
+       objects.
+    """
+    return sortVideosList(videos, player_extensions)
 
 
 class View(grok.View):
@@ -93,9 +165,10 @@ class View(grok.View):
         meta_path = bpath + ".metadata"
         if not os.path.exists(meta_path):
             print "no metadata for ", context
-            context.thumbnailurl = None
-            context.playingtime = 'unknown'
-            context.urls = []
+            context.thumbnailurl = '/++resource++on.video/novideo.png'
+            context.playingtime = '00:00:00'
+            context.videos = []
+            context.playerchoice = []
             return None # can't raise an exception here
         mdfile = open(meta_path, "rb")
         # thumbnail file:
@@ -134,7 +207,8 @@ class View(grok.View):
             print "checking filenames: ", os.path.join(settings.fspath, v)
             if os.path.exists(os.path.join(settings.fspath, v)):
                 videos.append(vVideo(settings.urlbase + v, k))
-        context.videos = videos
+        context.videos = sortVideosForDownload(videos)
+        context.playerchoice = sortVideosForPlayer(context.videos)
 
     @memoize
     def maybeReadMetaData(self, context):

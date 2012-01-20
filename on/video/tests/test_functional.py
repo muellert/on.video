@@ -74,7 +74,7 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(v in self.portal)
 
 
-    def test_read_video_metadata(self):
+    def test_read_video1_metadata(self):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
@@ -94,25 +94,55 @@ class TestOnVideoHandling(unittest.TestCase):
         url = browser.open(video.absolute_url())
         print "url: ", url
 
+    def test_read_video2_metadata(self):
+        """Create a video object and inspect its attributes to see whether
+           it conforms to the specs.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video2', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_2',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        # Commit so that the test browser knows about this (see optilux.cinemacontent):
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        url = browser.open(video.absolute_url())
+        print "url: ", url
+
+    def test_read_video_no_metadata(self):
+        """Create a video object and inspect its attributes to see whether
+           it conforms to the specs.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video3', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'no-metadata',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        # Commit so that the test browser knows about this (see optilux.cinemacontent):
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        url = browser.open(video.absolute_url())
+        print "url: ", url
+
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo
-
         v = vVideo("bla.ogv", "OGV")
         self.failUnless(v.url == 'bla.ogv')
-        self.failUnless(v.format == 'OGV')
+        self.failUnless(v.displayformat == 'OGV')
+        self.failUnless(v.filetype == 'ogg')
 
 
-    def XXtest_inspect_video(self):
-        """Access the created video via the browser and see whether the metadata
-           file is being parsed correctly.
-        """
-        from on.video import video
-        # What is the correct API?
-        #import pdb; pdb.set_trace()
-        v = video.IVideo()
-        #print "v: ", v
-        self.failUnless(str(v) == 'bla')
 
 
 

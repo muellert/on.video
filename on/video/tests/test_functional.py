@@ -17,8 +17,8 @@ import shutil
 import unittest2 as unittest
 
 from plone.app.testing import TEST_USER_ID
-from plone.app.testing import TEST_USER_NAME
-from plone.app.testing import TEST_USER_PASSWORD
+#from plone.app.testing import TEST_USER_NAME
+#from plone.app.testing import TEST_USER_PASSWORD
 
 from plone.app.testing import setRoles
 
@@ -31,7 +31,7 @@ from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
 
 from plone.testing.z2 import Browser
 
-from zope.publisher.browser import TestRequest
+#from zope.publisher.browser import TestRequest
 
 class TestOnVideoHandling(unittest.TestCase):
     """Test the code for handling video objects, views etc."""
@@ -78,25 +78,21 @@ class TestOnVideoHandling(unittest.TestCase):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
-        #registry = queryUtility(IRegistry)
-        #settings = registry.forInterface(IVideoConfiguration)
         v = self.portal.invokeFactory('on.video.Video', 'video1', title=u"My Sample Video",
                                       name = 'some kind of video',
                                       author = 'me, myself',
                                       recorded = datetime.now(),
+                                      filename = 'sample_video_1',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        #self.failUnless(v in self.portal)
+        # Commit so that the test browser knows about this (see optilux.cinemacontent):
+        import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
-        #import pdb; pdb.set_trace()
         url = browser.open(video.absolute_url())
         print "url: ", url
-
-
-
 
 
     def test_video_format_thingy(self):

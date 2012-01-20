@@ -10,8 +10,8 @@ from Products.CMFCore.utils import getToolByName
 from plone.registry.interfaces import IRegistry
 
 from plone.app.testing import TEST_USER_ID
-from plone.app.testing import TEST_USER_NAME
-from plone.app.testing import TEST_USER_PASSWORD
+#from plone.app.testing import TEST_USER_NAME
+#from plone.app.testing import TEST_USER_PASSWORD
 
 from plone.app.testing import setRoles
 

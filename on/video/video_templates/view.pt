@@ -9,7 +9,7 @@
 
 <metal:content-core fill-slot="content-core">
     <metal:content-core define-macro="content-core">
-      <tal:videofiles tal:define="videos view/videofiles">
+      <tal:vlist tal:define="videos view/videofiles">
         <div class="on-video-thumbnail">
 	  <video width="640" height="360" controls>
 	  <source src="__VIDEO__.mp4"  type="video/mp4" />
@@ -53,7 +53,7 @@
 	<div class="video-description"
 	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
 	         long description here</div>
-      </tal:videofiles>
+      </tal:vlist>
     </metal:content-core>
 </metal:content-core>
 

@@ -35,7 +35,7 @@ class IVideo(form.Schema):
         )
 
     filename = schema.TextLine(
-        title=_(u"Basename of the video file"),
+        title=_(u"Basename of the video file - eg. for 'myvideo.ogv', enter 'myvideo'."),
         )
 
     description = schema.Text(
@@ -54,6 +54,7 @@ class IVideo(form.Schema):
 
     def __str__(self):
         return "ON Video: " + self.title
+
 
 
 import os.path
@@ -76,7 +77,6 @@ class vVideo(object):
 class View(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
-    grok.name('view')
 
     """Basic Video View"""
 
@@ -84,7 +84,6 @@ class View(grok.View):
     def readVideoMetaData(self, context):
         """Read the video.metadata file to set some parameters. Helper function."""
         print "setting up video meta data for ", context
-        import pdb; pdb.set_trace()
         registry = queryUtility(IRegistry)
         settings = registry.forInterface(IVideoConfiguration)
         context.urlbase = settings.urlbase

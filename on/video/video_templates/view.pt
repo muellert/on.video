@@ -9,23 +9,33 @@
 
 <metal:content-core fill-slot="content-core">
     <metal:content-core define-macro="content-core">
-      <tal:vlist tal:define="videos view/videofiles">
+
         <div class="on-video-thumbnail">
-	  <video width="640" height="360" controls>
-	  <source src="__VIDEO__.mp4"  type="video/mp4" />
-	  <source src="__VIDEO__.ogv"  type="video/ogg" />
-	  <source src="__VIDEO__.webm"  type="video/webm" />
-	  <object width="640" height="360" type="application/x-shockwave-flash" data="__FLASH__.SWF">
-	  <param name="movie" value="__FLASH__.SWF" />
-	  <param name="flashvars" value="controlbar=over&amp;image=__POSTER__.JPG&amp;file=__VIDEO__.MP4" />
-            <img src="#" alt="#" title="No video playback capabilities, please download the video below" title="#"
-	         tal:attributes="src view/thumbnailurl;
-	                         alt context/title" />;
-	                        <!-- title context/description" /  >
-	  <img src="__VIDEO__.JPG" width="640" height="360" alt="__TITLE__"
-	  title="No video playback capabilities, please download the video below" / -->
-	  </object>
-	  </video>
+	  <!-- hardcode the dimension for now: -->
+	    <video tal:attributes="poster view/thumbnail"
+	           width="720" height="576" controls="control"
+	           poster="#" tabindex="0">
+	        <source tal:repeat="video view/playerchoices" src="#" type="#"
+	                tal:attributes="src video/url;
+	                                type video/filetype;"
+	        />
+	        <object tal:attributes="data view/player"
+	                                width="720" height="576"
+	                type="application/x-shockwave-flash" data="#">
+	            <param tal:attributes="value view/player" name="movie" value="#" />
+	            <param value="true" name="allowFullScreen">
+	            <param value="transparent" name="wmode">
+
+	            <param name="flashvars" value="#"
+	                   tal:attributes="value view/genFlashVars"
+	            />
+                    <img src="#" alt="#"
+	                 title="No video playback capabilities, please download the video below"
+	                 tal:attributes="src view/thumbnail;
+	                                 alt context/title;"
+	            />
+	        </object>
+	    </video>
 	    <br />
 	    "<span class="video-title" tal:content="context/title">Caption</span>"
 	      <br />by
@@ -38,12 +48,12 @@
 	<div class="playingtime_label">Playing Time: 
 	    <span class="playingtime" tal:content="context/playingtime" />
         </div>
-	<tal:downloadlinks tal:condition="view/videofiles">
+	<tal:downloadlinks tal:condition="view/videos">
 	<div class="video-download-block">
 	  <div>Download this video:</div>
 	    <ul class="video-downloadlinks-urllist">
 	      <li class="video-download-link"
-	         tal:repeat="video videos">
+	         tal:repeat="video view/videos">
 	             <a href="#" tal:attributes="href python: video.url"
 	                tal:content="python: video.displayformat">Link to video file</a>
 	      </li>
@@ -52,8 +62,8 @@
 	</tal:downloadlinks>
 	<div class="video-description"
 	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
-	         long description here</div>
-      </tal:vlist>
+	         long description here
+	</div>
     </metal:content-core>
 </metal:content-core>
 

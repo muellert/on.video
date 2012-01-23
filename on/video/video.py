@@ -65,14 +65,13 @@ from plone.registry.interfaces import IRegistry
 
 from on.video.configuration import IVideoConfiguration
 
-filetypes = {'mp4': 'mpeg',
-             'mpeg': 'mpeg',
-             'flv': 'flash',
-             'swf': 'flash',
-             'ogv': 'ogg',
-             'webm': 'webm',
-             'avi': 'avi',
-             'mov': 'mov',
+filetypes = {'mp4': 'video/mp4',
+             'mpeg': 'video/mpeg',
+             'flv': 'application/x-shockwave-flash',
+             'ogv': 'video/ogg',
+             'webm': 'video/webm',
+             'avi': 'video/x-msvideo',
+             'mov': 'video/quicktime',
              }
 
 
@@ -102,15 +101,20 @@ class vVideo(object):
         if extension in filetypes.keys():
             ftype = filetypes[extension]
         else:
-            ftype = 'unknown'
+            ftype = 'application/octet-stream'
         return ftype
 
 
 # I don't have a clue about videos - suggestions for improvements
 # are highly welcome!
 
-dl_extensions = ('ogg', 'webm', 'mpeg', 'avi', 'mov', 'flash', 'unknown')
-player_extensions = ('mpeg', 'ogg', 'webm', 'avi', 'mov', 'flash', 'unknown')
+dl_vtypes = ('video/ogg', 'video/webm', 'video/mp4', 'video/quicktime',
+                 'video/x-msvideo', 'application/x-shockwave-flash',
+                 'application/octet-stream')
+player_vtypes = ('video/mp4', 'video/ogg', 'video/webm',
+                     'video/quicktime', 'video/x-msvideo',
+                     'application/x-shockwave-flash',
+                     'application/octet-stream')
 
 
 def sortVideosList(videos, desiredsorting):
@@ -119,16 +123,19 @@ def sortVideosList(videos, desiredsorting):
        due to the estimated small size of the list.
     """
     result = []
+    print ">>> sortVideosList: videos = ", [ v.url for v in videos ]
     for ext in desiredsorting:
-        print "sortVideosList: videos = ", videos
+        print "=== sortVideosList: videos = ", [ v.url for v in videos ]
         video = 0
         while len(videos) > 0 and video < len(videos):
-            print "video: ", video
+            print "--- checking video: ", video
             if videos[video].filetype == ext:
                 result.append(videos[video])
                 videos.pop(video)
+                print "--- appended ", result[-1].url
             else:
-                video = video + 1
+                video += 1
+    print "<<< sortVideosList: result = ", [ v.url for v in result ]
     return result
 
 def sortVideosForDownload(videos):
@@ -136,15 +143,31 @@ def sortVideosForDownload(videos):
        features. The 'videos' parameter is a list of vVideo
        objects.
     """
-    return sortVideosList(videos, dl_extensions)
+    return sortVideosList(videos, dl_vtypes)
 
-def sortVideosForPlayer(videos):
+def sortVideosForPlayer(videos, selected):
     """Sort the videos for download, according to freeness and
        features. The 'videos' parameter is a list of vVideo
-       objects.
+       objects. Try to get the selected video into the first
+       position, but only if it is an MP4.
     """
-    return sortVideosList(videos, player_extensions)
+    print "sortVideosForPlayer(%s, %s)" % (str([ v.url for v in videos]), selected)
+    result = sortVideosList(videos, player_vtypes)
+    print ">>> sortVideosForPlayer(): result = ", [ v.url for v in result]
+    if selected and (selected.endswith('mp4') or selected.endswith('MP4')):
+        pos = 0
+        for video in result:
+            if video.url.endswith(selected):
+                break
+            pos += 1
+        if pos > 0:
+            swap = result[pos]
+            result[pos] = result[0]
+            result[0] = swap
+    return result
 
+
+import config
 
 class View(grok.View):
     grok.context(IVideo)
@@ -152,30 +175,32 @@ class View(grok.View):
 
     """Basic Video View"""
 
-    @memoize
+    #@memoize
     def readVideoMetaData(self, context):
         """Read the video.metadata file to set some parameters. Helper function."""
-        print "setting up video meta data for ", context
+        #print "setting up video meta data for ", context
         registry = queryUtility(IRegistry)
         settings = registry.forInterface(IVideoConfiguration)
         context.urlbase = settings.urlbase
         if settings.urlbase[-1] != '/':
             settings.urlbase = settings.urlbase + '/'
+        self.player = settings.urlbase + config.PLAYER
         bpath = os.path.join(settings.fspath, context.filename)
         meta_path = bpath + ".metadata"
+        self.thumbnailurl = None
         if not os.path.exists(meta_path):
             print "no metadata for ", context
-            context.thumbnailurl = '/++resource++on.video/novideo.png'
+            self.thumbnailurl = '/++resource++on.video/novideo.png'
             context.playingtime = '00:00:00'
-            context.videos = []
-            context.playerchoice = []
-            return None # can't raise an exception here
+            self.videos = []
+            self.playerchoices = []
+            return                     # can't raise an exception here
+
         mdfile = open(meta_path, "rb")
         # thumbnail file:
         thumb = mdfile.next().split(':', 1)
-        context.thumbnailurl = None
         if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-            context.thumbnailurl = settings.baseurl + thumb[1].strip()
+            self.thumbnailurl = settings.baseurl + thumb[1].strip()
 
         # playing time:
         ptime = mdfile.next().split(':', 1)
@@ -188,6 +213,7 @@ class View(grok.View):
 
         # set url to the video that should be played inline (how to manage different sizes?):
         svid = mdfile.next().split(':', 1)
+        self.directplay = None
         if svid[0].strip() == 'selected':
             vf = None
             if len(svid) > 1:
@@ -195,20 +221,30 @@ class View(grok.View):
                 if len(vf) > 1 and vf[0] == '/':
                     vf = vf[1:]
             if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
-                context.directplay = settings.urlbase + vf
+                self.directplay = settings.urlbase + vf
         # now read the alternative formats list:
-        videos = []
+        # make the videos unique:
+        if self.directplay:
+            videos = { self.directplay: vVideo(settings.urlbase + self.directplay, self.directplay) }
+        else:
+            videos = {}
         for row in mdfile:
-            print "current row: -->%s<--" % row
+            #print "current row: -->%s<--" % row
             if ':' not in row:
                 break
+            # k: format, v: filename
             k, v = row.split(':', 1)
             v = v.strip()
-            print "checking filenames: ", os.path.join(settings.fspath, v)
-            if os.path.exists(os.path.join(settings.fspath, v)):
-                videos.append(vVideo(settings.urlbase + v, k))
-        context.videos = sortVideosForDownload(videos)
-        context.playerchoice = sortVideosForPlayer(context.videos)
+            #print "checking filenames: ", os.path.join(settings.fspath, v)
+            if not v in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
+                videos[v] = vVideo(settings.urlbase + v, k)
+        vk = videos.values()
+        #print "videos: ", videos.keys()
+        #if self.directplay not in videos.keys():
+        #    vk.append(vVideo(settings.urlbase + self.directplay, self.directplay))
+        self.playerchoices = sortVideosForPlayer(vk, self.directplay)
+        self.directplay = self.playerchoices[0]
+        self.videos = sortVideosForDownload(self.playerchoices)
 
     @memoize
     def maybeReadMetaData(self, context):
@@ -216,29 +252,58 @@ class View(grok.View):
         try:
             if len(context.videos) == 0:
                 self.readVideoMetaData(context)
-            print "context now has these urls: ", context.videos
+            #print "context now has these urls: ", context.videos
         except:
             self.readVideoMetaData(context)
-        return context.videos
+        return self.videos
 
+    @memoize
     def videofiles(self):
-        """Return a list of video urls"""
+        """Return a list of video urls for download"""
         context = aq_inner(self.context)
         print "video:videofiles(%s, context=%s)" % (str(self), str(context))
         self.maybeReadMetaData(context)
-        return context.videos
+        return self.videos
 
-    def thumbnailurl(self):
-        """Calculate the URL to the thumbnail"""
+    @memoize
+    def playerchoices(self):
+        """Return a list of video urls for the player"""
         context = aq_inner(self.context)
+        print "video:playerchoices(%s, context=%s)" % (str(self), str(context))
         self.maybeReadMetaData(context)
-        if context.thumbnailurl is not None:
-            return context.thumbnailurl;
-        else:
-            return '/++resource++on.video/nothumbnail.png'
+        return self.playerchoices
 
+    @memoize
     def playingtime(self):
         """return the string for the playing time, if any"""
         context = aq_inner(self.context)
         self.maybeReadMetaData(context)
         return context.playing_time
+
+    @memoize
+    def thumbnail(self):
+        """Calculate the URL to the thumbnail"""
+        context = aq_inner(self.context)
+        #try:
+        self.maybeReadMetaData(context)
+        #except:
+        #    self.thumbnailurl = '/++resource++on.video/novideo.png'
+        if self.thumbnailurl is not None:
+            return self.thumbnailurl;
+        else:
+            return '/++resource++on.video/nothumbnail.png'
+
+    @memoize
+    def genFlashVars(self):
+        """Generate a correct config string for the flash player.
+
+           Sample:  value="config={'playlist':['/videosGHM/Joakim_Verona-Emacs_XWidget-2-1.jpg',{'url':'/videosGHM/Joakim_Verona-Emacs_XWidget.mp4','autoPlay':false}]}"
+        """
+        thumbnail = self.thumbnail()
+        try:
+            video = self.directplay.url
+        except:
+            video = "video not available"
+        config="config={'playlist':['%s',{'url':'%s','autoPlay':false}]}" % \
+                (thumbnail, video)
+        return config

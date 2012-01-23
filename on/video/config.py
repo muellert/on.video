@@ -5,3 +5,4 @@ ON_VIDEO_FS_PATH = u'/tmp'
 # BEWARE: URLs must not contain Unicode!
 ON_VIDEO_URL = "http://localhost/"
 
+PLAYER = "flowplayer-3.2.5.swf"

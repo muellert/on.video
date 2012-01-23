@@ -49,7 +49,7 @@ class TestOnVideoHandling(unittest.TestCase):
         shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_2.metadata')
         shutil.copy(sampledata, self.td)
-        videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.divx',
+        videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
                       'sample_video_2.mp4', 'sample_video_2.flv')
         for video in videofiles:
             o = open(os.path.join(self.td, video), "wb")
@@ -91,8 +91,9 @@ class TestOnVideoHandling(unittest.TestCase):
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
-        url = browser.open(video.absolute_url())
-        print "url: ", url
+        browser.open(video.absolute_url())
+        #print "result: ", browser.contents
+        self.failUnless('nothumbnail' in browser.contents)
 
     def test_read_video2_metadata(self):
         """Create a video object and inspect its attributes to see whether
@@ -111,12 +112,14 @@ class TestOnVideoHandling(unittest.TestCase):
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
-        url = browser.open(video.absolute_url())
-        print "url: ", url
+        browser.open(video.absolute_url())
+        #print "result: ", browser.contents
+        self.failUnless('nothumbnail' in browser.contents)
 
     def test_read_video_no_metadata(self):
-        """Create a video object and inspect its attributes to see whether
-           it conforms to the specs.
+        """Create a video object that has no metadata file.
+           See whether the code detects this properly and
+           displays the appropriate placeholder image.
         """
         v = self.portal.invokeFactory('on.video.Video', 'video3', title=u"My Sample Video",
                                       name = 'some kind of video',
@@ -131,8 +134,9 @@ class TestOnVideoHandling(unittest.TestCase):
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
-        url = browser.open(video.absolute_url())
-        print "url: ", url
+        browser.open(video.absolute_url())
+        #print "result: ", browser.contents
+        self.failUnless('novideo' in browser.contents)
 
 
     def test_video_format_thingy(self):
@@ -140,7 +144,7 @@ class TestOnVideoHandling(unittest.TestCase):
         v = vVideo("bla.ogv", "OGV")
         self.failUnless(v.url == 'bla.ogv')
         self.failUnless(v.displayformat == 'OGV')
-        self.failUnless(v.filetype == 'ogg')
+        self.failUnless(v.filetype == 'video/ogg')
 
 
 

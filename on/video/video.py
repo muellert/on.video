@@ -200,7 +200,7 @@ class View(grok.View):
         # thumbnail file:
         thumb = mdfile.next().split(':', 1)
         if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-            self.thumbnailurl = settings.baseurl + thumb[1].strip()
+            self.thumbnailurl = settings.urlbase + thumb[1].strip()
 
         # playing time:
         ptime = mdfile.next().split(':', 1)

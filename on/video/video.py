@@ -49,6 +49,12 @@ class IVideo(form.Schema):
         title=_(u"Long description (allows some HTML)"),
         )
 
+    excludeFromNav = schema.Bool(
+	title=_('Exclude from navigation'),
+	default=False
+	)
+
+
     def __repr__(self):
         return "<ON Video at %lx>" % self
 

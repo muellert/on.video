@@ -49,8 +49,14 @@ class TestOnVideoHandling(unittest.TestCase):
         shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_2.metadata')
         shutil.copy(sampledata, self.td)
+        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
+        shutil.copy(sampledata, self.td)
+        sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
+        shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
-                      'sample_video_2.mp4', 'sample_video_2.flv')
+                      'sample_video_2.mp4', 'sample_video_2.avi',
+                      'sample_video_3.mp4', 'sample_video_3_medium.ogv',
+                      )
         for video in videofiles:
             o = open(os.path.join(self.td, video), "wb")
             o.write("1")
@@ -137,6 +143,31 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.open(video.absolute_url())
         #print "result: ", browser.contents
         self.failUnless('novideo' in browser.contents)
+
+    def test_read_video_with_thumbnail(self):
+        """Create a video object that has no metadata file.
+           See whether the code detects this properly and
+           displays the appropriate placeholder image.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video4', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_3',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        # Commit so that the test browser knows about this (see optilux.cinemacontent):
+        #import transaction; transaction.commit()
+        video = self.portal[v]
+        #print "video: ", video
+        view = video.restrictedTraverse('@@view')
+        downloads = view.videofiles()
+        #print "downloads: ", [ r.url for r in downloads ]
+        playlist = view.playerchoices()
+        #print "playlist: ", playlist
+        #import pdb; pdb.set_trace()
+        self.failUnless(playlist[0].url.endswith(".mp4"))
+        self.failUnless(downloads[0].url.endswith(".ogv"))
 
 
     def test_video_format_thingy(self):

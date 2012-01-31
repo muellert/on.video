@@ -50,10 +50,9 @@ class IVideo(form.Schema):
         )
 
     excludeFromNav = schema.Bool(
-	title=_('Exclude from navigation'),
-	default=False
-	)
-
+        title=_('Exclude from navigation'),
+        default=False
+        )
 
     def __repr__(self):
         return "<ON Video at %lx>" % self
@@ -129,19 +128,19 @@ def sortVideosList(videos, desiredsorting):
        due to the estimated small size of the list.
     """
     result = []
-    print ">>> sortVideosList: videos = ", [ v.url for v in videos ]
+    #print ">>> sortVideosList: videos = ", [ v.url for v in videos ]
     for ext in desiredsorting:
-        print "=== sortVideosList: videos = ", [ v.url for v in videos ]
+        #print "=== sortVideosList: videos = ", [ v.url for v in videos ]
         video = 0
         while len(videos) > 0 and video < len(videos):
-            print "--- checking video: ", video
+            #print "--- checking video: ", video
             if videos[video].filetype == ext:
                 result.append(videos[video])
                 videos.pop(video)
-                print "--- appended ", result[-1].url
+                #print "--- appended ", result[-1].url
             else:
                 video += 1
-    print "<<< sortVideosList: result = ", [ v.url for v in result ]
+    #print "<<< sortVideosList: result = ", [ v.url for v in result ]
     return result
 
 def sortVideosForDownload(videos):
@@ -157,9 +156,9 @@ def sortVideosForPlayer(videos, selected):
        objects. Try to get the selected video into the first
        position, but only if it is an MP4.
     """
-    print "sortVideosForPlayer(%s, %s)" % (str([ v.url for v in videos]), selected)
+    #print ">>> sortVideosForPlayer(%s, %s)" % (str([ v.url for v in videos]), selected)
     result = sortVideosList(videos, player_vtypes)
-    print ">>> sortVideosForPlayer(): result = ", [ v.url for v in result]
+    #print "--- sortVideosForPlayer(): result = ", [ v.url for v in result]
     if selected and (selected.endswith('mp4') or selected.endswith('MP4')):
         pos = 0
         for video in result:
@@ -196,11 +195,8 @@ class View(grok.View):
         self.thumbnailurl = None
         if not os.path.exists(meta_path):
             print "no metadata for ", context
-            self.thumbnailurl = '/++resource++on.video/novideo.png'
-            context.playingtime = '00:00:00'
-            self.videos = []
-            self.playerchoices = []
-            return                     # can't raise an exception here
+            self.setDefaultNoVideoValues(context)
+            return
 
         mdfile = open(meta_path, "rb")
         # thumbnail file:
@@ -219,7 +215,15 @@ class View(grok.View):
 
         # set url to the video that should be played inline (how to manage different sizes?):
         svid = mdfile.next().split(':', 1)
+
+        # Algorithm:
+        # We need to select an MP4 format video for direct play, if possible.
+        # To arrive at a consistent list of video files to play/download, we
+        # only remember the file name of the selected video and see, whether
+        # it occurs again later down the road (eg. should there be multiple
+        # MP4 videos available).
         self.directplay = None
+        directplay = None
         if svid[0].strip() == 'selected':
             vf = None
             if len(svid) > 1:
@@ -227,30 +231,32 @@ class View(grok.View):
                 if len(vf) > 1 and vf[0] == '/':
                     vf = vf[1:]
             if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
-                self.directplay = settings.urlbase + vf
+                directplay = vf
         # now read the alternative formats list:
         # make the videos unique:
-        if self.directplay:
-            videos = { self.directplay: vVideo(settings.urlbase + self.directplay, self.directplay) }
-        else:
-            videos = {}
+        videos = {}
+        #print "--- readVideoMetaData(): videos = ", videos
         for row in mdfile:
-            #print "current row: -->%s<--" % row
+            #print "... readVideoMetaData(): current row: -->%s<--" % row
             if ':' not in row:
                 break
             # k: format, v: filename
             k, v = row.split(':', 1)
             v = v.strip()
             #print "checking filenames: ", os.path.join(settings.fspath, v)
-            if not v in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
-                videos[v] = vVideo(settings.urlbase + v, k)
-        vk = videos.values()
-        #print "videos: ", videos.keys()
-        #if self.directplay not in videos.keys():
-        #    vk.append(vVideo(settings.urlbase + self.directplay, self.directplay))
-        self.playerchoices = sortVideosForPlayer(vk, self.directplay)
-        self.directplay = self.playerchoices[0]
-        self.videos = sortVideosForDownload(self.playerchoices)
+            if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
+                videos[k] = vVideo(settings.urlbase + v, k)
+                #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
+        vlist = videos.values()
+        #print "videos: ", vlist
+        #import pdb; pdb.set_trace()
+        self.playfiles = sortVideosForPlayer(vlist, directplay)
+        #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
+        #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
+        self.directplay = self.playfiles[0]
+        # deep copy!!!
+        downloadlist = self.playfiles[:]
+        self.videos = sortVideosForDownload(downloadlist)
 
     @memoize
     def maybeReadMetaData(self, context):
@@ -260,24 +266,30 @@ class View(grok.View):
                 self.readVideoMetaData(context)
             #print "context now has these urls: ", context.videos
         except:
-            self.readVideoMetaData(context)
+            try:
+                self.readVideoMetaData(context)
+            except: # corrupt metadata file:
+                self.setDefaultNoVideoValues(context)
         return self.videos
 
     @memoize
     def videofiles(self):
         """Return a list of video urls for download"""
         context = aq_inner(self.context)
-        print "video:videofiles(%s, context=%s)" % (str(self), str(context))
+        #print "video::videofiles(%s, context=%s)" % (str(self), str(context))
         self.maybeReadMetaData(context)
         return self.videos
 
     @memoize
+    #@property
     def playerchoices(self):
         """Return a list of video urls for the player"""
         context = aq_inner(self.context)
-        print "video:playerchoices(%s, context=%s)" % (str(self), str(context))
+        #print "video:playerchoices(%s, context=%s)" % (str(self), str(context))
         self.maybeReadMetaData(context)
-        return self.playerchoices
+        #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
+        #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
+        return self.playfiles
 
     @memoize
     def playingtime(self):
@@ -298,6 +310,14 @@ class View(grok.View):
             return self.thumbnailurl;
         else:
             return '/++resource++on.video/nothumbnail.png'
+
+    def setDefaultNoVideoValues(self, context):
+        self.thumbnailurl = '/++resource++on.video/novideo.png'
+        context.playingtime = '00:00:00'
+        self.videos = []
+        self.playfiles = []
+        return
+
 
     @memoize
     def genFlashVars(self):

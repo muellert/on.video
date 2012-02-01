@@ -277,10 +277,10 @@ class View(grok.View):
                 #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
         mdfile.close()
         vlist = videos.values()
-        print "videos: ", vlist
+        #print "videos: ", vlist
         self.playfiles = sortVideosForPlayer(vlist, directplay)
-        print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
-        print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
+        #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
+        #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         self.directplay = self.playfiles[0]
         # deep copy!!!
         downloadlist = self.playfiles[:]
@@ -290,7 +290,7 @@ class View(grok.View):
     def videofiles(self):
         """Return a list of video urls for download"""
         context = aq_inner(self.context)
-            return self.videos
+        return self.videos
 
     @memoize
     def playerchoices(self):

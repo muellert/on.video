@@ -172,9 +172,8 @@ class TestOnVideoHandling(unittest.TestCase):
         #print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
         #print "playlist: ", playlist
-        #print "playingtime: ", view.playingtime()
-        self.failUnless(view.playingtime() == '20:30:50')
-        #import pdb; pdb.set_trace()
+        #print "playingtime: ", view.playing_time
+        self.failUnless(view.playing_time == '20:30:50')
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
 

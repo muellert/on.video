@@ -110,9 +110,6 @@ class vVideo(object):
         return ftype
 
 
-# I don't have a clue about videos - suggestions for improvements
-# are highly welcome!
-
 dl_vtypes = ('video/ogg', 'video/webm', 'video/mp4', 'video/quicktime',
                  'video/x-msvideo', 'application/x-shockwave-flash',
                  'application/octet-stream')
@@ -177,7 +174,7 @@ import config
 
 def setDefaultNoVideoValues(view, context):
     view.thumbnailurl = '/++resource++on.video/novideo.png'
-    context.playing_time = '00:00:00'
+    view.playing_time = '00:00:00'
     view.videos = []
     view.playfiles = []
 
@@ -211,6 +208,13 @@ def getMetaDataFileHandle(view, context):
     thumb = mdfile.next().split(':', 1)
     if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
         view.thumbnailurl = settings.urlbase + thumb[1].strip()
+    ptime = mdfile.next().split(':', 1)
+    if ptime[0].strip() == 'playing time' and len(ptime) > 1:
+        pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
+        if pt:
+            view.playing_time = pt.group()
+        else:
+            view.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
     return mdfile, settings
 
 
@@ -232,13 +236,6 @@ class View(grok.View):
             return
 
         # playing time:
-        ptime = mdfile.next().split(':', 1)
-        if ptime[0].strip() == 'playing time' and len(ptime) > 1:
-            pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
-            if pt:
-                context.playing_time = pt.group()
-            else:
-                context.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
 
         # set url to the video that should be played inline (how to manage different sizes?):
         svid = mdfile.next().split(':', 1)
@@ -299,12 +296,6 @@ class View(grok.View):
         #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
         #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         return self.playfiles
-
-    @memoize
-    def playingtime(self):
-        """return the string for the playing time, if any"""
-        context = aq_inner(self.context)
-        return context.playing_time
 
     @memoize
     def thumbnail(self):

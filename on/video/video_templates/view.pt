@@ -47,7 +47,7 @@
         </div>
 
 	<div class="playingtime_label">Playing Time: 
-	    <span class="playingtime" tal:content="view/playingtime" />
+	    <span class="playingtime" tal:content="view/playing_time" />
         </div>
 	<tal:downloadlinks tal:condition="view/videos">
 	<div class="video-download-block">

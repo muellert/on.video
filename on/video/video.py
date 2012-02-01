@@ -49,6 +49,11 @@ class IVideo(form.Schema):
         title=_(u"Long description (allows some HTML)"),
         )
 
+    #excludeFromNav = schema.Bool(
+    #    title=_('Exclude from navigation'),
+    #    default=False
+    #    )
+
     def __repr__(self):
         return "<ON Video at %lx>" % self
 
@@ -169,44 +174,71 @@ def sortVideosForPlayer(videos, selected):
 
 import config
 
+
+def setDefaultNoVideoValues(view, context):
+    view.thumbnailurl = '/++resource++on.video/novideo.png'
+    context.playing_time = '00:00:00'
+    view.videos = []
+    view.playfiles = []
+
+def fixupConfig():
+    """Fix up the configuration, if required."""
+    registry = queryUtility(IRegistry)
+    settings = registry.forInterface(IVideoConfiguration)
+    if settings.urlbase[-1] != '/':
+        settings.urlbase = settings.urlbase + '/'
+    if not (os.path.exists(settings.fspath) and os.path.isdir(settings.fspath)):
+        print "The configured path '%s' is not a directory, setting it to /tmp" % settings.fspath
+        settings.fspath = '/tmp'        # fake it...
+    return settings
+
+def getMetaDataFileHandle(view, context):
+    """Find the metadata file and open it, fixing up the registry
+       along the way.
+    """
+    #print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
+    settings = fixupConfig()
+    view.player = settings.urlbase + config.PLAYER
+    bpath = os.path.join(settings.fspath, context.filename)
+    meta_path = bpath + ".metadata"
+    view.thumbnailurl = None
+    if not os.path.exists(meta_path):
+        print "no metadata for ", context
+        setDefaultNoVideoValues(view, context)
+        return None, settings
+    mdfile = open(meta_path, "rb")
+    # thumbnail file:
+    thumb = mdfile.next().split(':', 1)
+    if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
+        view.thumbnailurl = settings.urlbase + thumb[1].strip()
+    return mdfile, settings
+
+
 class View(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
 
     """Basic Video View"""
 
-    #@memoize
-    def readVideoMetaData(self, context):
-        """Read the video.metadata file to set some parameters. Helper function."""
-        #print "setting up video meta data for ", context
-        registry = queryUtility(IRegistry)
-        settings = registry.forInterface(IVideoConfiguration)
-        context.urlbase = settings.urlbase
-        if settings.urlbase[-1] != '/':
-            settings.urlbase = settings.urlbase + '/'
-        self.player = settings.urlbase + config.PLAYER
-        bpath = os.path.join(settings.fspath, context.filename)
-        meta_path = bpath + ".metadata"
-        self.thumbnailurl = None
-        if not os.path.exists(meta_path):
-            print "no metadata for ", context
-            self.setDefaultNoVideoValues(context)
-            return
+    def __init__(self, context, request):
+        super(View, self).__init__(context, request)
+        self.readVideoMetaData(context)
 
-        mdfile = open(meta_path, "rb")
-        # thumbnail file:
-        thumb = mdfile.next().split(':', 1)
-        if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-            self.thumbnailurl = settings.urlbase + thumb[1].strip()
+    def readVideoMetaData(self, context):
+        """Read the video.metadata file to set some parameters. Helper function.
+        """
+        (mdfile, settings) = getMetaDataFileHandle(self, context)
+        if not mdfile:                  # integrity error, but hey...
+            return
 
         # playing time:
         ptime = mdfile.next().split(':', 1)
         if ptime[0].strip() == 'playing time' and len(ptime) > 1:
             pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
             if pt:
-                context.playingtime = pt.group()
+                context.playing_time = pt.group()
             else:
-                context.playingtime = 'unknown' #None #'0:00:00' # unnown playing time
+                context.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
 
         # set url to the video that should be played inline (how to manage different sizes?):
         svid = mdfile.next().split(':', 1)
@@ -219,6 +251,7 @@ class View(grok.View):
         # MP4 videos available).
         self.directplay = None
         directplay = None
+        #import pdb; pdb.set_trace()
         if svid[0].strip() == 'selected':
             vf = None
             if len(svid) > 1:
@@ -242,46 +275,27 @@ class View(grok.View):
             if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
                 videos[k] = vVideo(settings.urlbase + v, k)
                 #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
+        mdfile.close()
         vlist = videos.values()
-        #print "videos: ", vlist
-        #import pdb; pdb.set_trace()
+        print "videos: ", vlist
         self.playfiles = sortVideosForPlayer(vlist, directplay)
-        #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
-        #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
+        print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
+        print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         self.directplay = self.playfiles[0]
         # deep copy!!!
         downloadlist = self.playfiles[:]
         self.videos = sortVideosForDownload(downloadlist)
 
     @memoize
-    def maybeReadMetaData(self, context):
-        """Read in the metadata file, but only if it hasn't been read in yet."""
-        try:
-            if len(context.videos) == 0:
-                self.readVideoMetaData(context)
-            #print "context now has these urls: ", context.videos
-        except:
-            try:
-                self.readVideoMetaData(context)
-            except: # corrupt metadata file:
-                self.setDefaultNoVideoValues(context)
-        return self.videos
-
-    @memoize
     def videofiles(self):
         """Return a list of video urls for download"""
         context = aq_inner(self.context)
-        #print "video::videofiles(%s, context=%s)" % (str(self), str(context))
-        self.maybeReadMetaData(context)
-        return self.videos
+            return self.videos
 
     @memoize
-    #@property
     def playerchoices(self):
         """Return a list of video urls for the player"""
         context = aq_inner(self.context)
-        #print "video:playerchoices(%s, context=%s)" % (str(self), str(context))
-        self.maybeReadMetaData(context)
         #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
         #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         return self.playfiles
@@ -290,35 +304,25 @@ class View(grok.View):
     def playingtime(self):
         """return the string for the playing time, if any"""
         context = aq_inner(self.context)
-        self.maybeReadMetaData(context)
         return context.playing_time
 
     @memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
         context = aq_inner(self.context)
-        #try:
-        self.maybeReadMetaData(context)
-        #except:
-        #    self.thumbnailurl = '/++resource++on.video/novideo.png'
         if self.thumbnailurl is not None:
             return self.thumbnailurl;
         else:
             return '/++resource++on.video/nothumbnail.png'
 
-    def setDefaultNoVideoValues(self, context):
-        self.thumbnailurl = '/++resource++on.video/novideo.png'
-        context.playingtime = '00:00:00'
-        self.videos = []
-        self.playfiles = []
-        return
-
-
     @memoize
     def genFlashVars(self):
         """Generate a correct config string for the flash player.
 
-           Sample:  value="config={'playlist':['/videosGHM/Joakim_Verona-Emacs_XWidget-2-1.jpg',{'url':'/videosGHM/Joakim_Verona-Emacs_XWidget.mp4','autoPlay':false}]}"
+           Sample:  value="config={'playlist':['/videosGHM/Joakim_Verona-Emacs_XWidget-2-1.jpg'
+                      ,{'url':'/videosGHM/Joakim_Verona-Emacs_XWidget.mp4','autoPlay':false}]}"
+
+           (all in one line, without spaces)
         """
         thumbnail = self.thumbnail()
         try:

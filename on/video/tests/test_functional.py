@@ -68,6 +68,7 @@ class TestOnVideoHandling(unittest.TestCase):
 
     def tearDown(self):
         """remove the temp stuff"""
+        #print "Please remove the test dir, ", self.td
         shutil.rmtree(self.td)
 
     def test_create_video_object(self):
@@ -97,6 +98,14 @@ class TestOnVideoHandling(unittest.TestCase):
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
+        view = video.restrictedTraverse('@@view')
+        downloads = view.videofiles()
+        print "downloads: ", [ r.url for r in downloads ]
+        playlist = view.playerchoices()
+        print "playlist: ", playlist
+        #import pdb; pdb.set_trace()
+        self.failUnless(playlist[0].url.endswith(".mp4"))
+        self.failUnless(downloads[0].url.endswith(".ogv"))
         browser.open(video.absolute_url())
         #print "result: ", browser.contents
         self.failUnless('nothumbnail' in browser.contents)
@@ -145,9 +154,7 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless('novideo' in browser.contents)
 
     def test_read_video_with_thumbnail(self):
-        """Create a video object that has no metadata file.
-           See whether the code detects this properly and
-           displays the appropriate placeholder image.
+        """Create a video object with a thumbnail.
         """
         v = self.portal.invokeFactory('on.video.Video', 'video4', title=u"My Sample Video",
                                       name = 'some kind of video',
@@ -156,15 +163,17 @@ class TestOnVideoHandling(unittest.TestCase):
                                       filename = 'sample_video_3',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        # Commit so that the test browser knows about this (see optilux.cinemacontent):
-        #import transaction; transaction.commit()
         video = self.portal[v]
+        import transaction; transaction.commit()
         #print "video: ", video
         view = video.restrictedTraverse('@@view')
+        print "view: ", view, ", dir: ", dir(view)
         downloads = view.videofiles()
-        #print "downloads: ", [ r.url for r in downloads ]
+        print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
-        #print "playlist: ", playlist
+        print "playlist: ", playlist
+        print "playingtime: ", view.playingtime()
+        self.failUnless(view.playingtime() == '20:30:50')
         #import pdb; pdb.set_trace()
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))

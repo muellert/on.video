@@ -167,12 +167,12 @@ class TestOnVideoHandling(unittest.TestCase):
         import transaction; transaction.commit()
         #print "video: ", video
         view = video.restrictedTraverse('@@view')
-        print "view: ", view, ", dir: ", dir(view)
+        #print "view: ", view, ", dir: ", dir(view)
         downloads = view.videofiles()
-        print "downloads: ", [ r.url for r in downloads ]
+        #print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
-        print "playlist: ", playlist
-        print "playingtime: ", view.playingtime()
+        #print "playlist: ", playlist
+        #print "playingtime: ", view.playingtime()
         self.failUnless(view.playingtime() == '20:30:50')
         #import pdb; pdb.set_trace()
         self.failUnless(playlist[0].url.endswith(".mp4"))

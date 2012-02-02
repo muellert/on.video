@@ -57,13 +57,16 @@ class TestOnVideoHandling(unittest.TestCase):
                       'sample_video_2.mp4', 'sample_video_2.avi',
                       'sample_video_3.mp4', 'sample_video_3_medium.ogv',
                       )
-        for video in videofiles:
-            o = open(os.path.join(self.td, video), "wb")
-            o.write("1")
-            o.close()
+        subdir = os.path.join(self.td, "subfolder")
+        os.mkdir(subdir)
+        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
+        shutil.copy(sampledata, subdir)
+        for d in self.td, subdir:
+            for video in videofiles:
+                o = open(os.path.join(d, video), "wb")
+                o.write("1")
+                o.close()
         self.settings.fspath = unicode(self.td)
-        #self.browser_ = Browser()
-        #self.request_ = TestRequest()
 
 
     def tearDown(self):
@@ -196,6 +199,26 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.open(video.absolute_url() + '/@@summary')
         self.failUnless('<div class="on-video-small-thumbnail">' in browser.contents)
         self.failIf('<object>' in browser.contents)
+
+    def test_read_video_from_subdir(self):
+        """See whether we can serve a video from a subdirectory.
+           The hardcoded valeu for the URL prefix should be replaced
+           by reading the registry.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video5', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'subfolder/sample_video_3',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        view = video.restrictedTraverse('@@view')
+        self.failUnless('http://localhost/subfolder/' in view.thumbnail())
+        downloads = view.videofiles()
+        for video in downloads:
+            self.failUnless('http://localhost/subfolder/' in video.url)
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo

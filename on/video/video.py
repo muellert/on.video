@@ -8,12 +8,16 @@
 from five import grok
 from zope import schema
 
-from plone.directives import form, dexterity
+from urlparse import urljoin
+
+from plone.directives import form
+
+#, dexterity
 from plone.memoize.instance import memoize
 
 from plone.app.textfield import RichText
 
-from plone.namedfile.field import NamedImage
+#from plone.namedfile.field import NamedImage
 
 from on.video import _
 
@@ -54,12 +58,13 @@ class IVideo(form.Schema):
         title=_(u"Long description (allows some HTML)"),
         )
 
+    """
     def __repr__(self):
         return "<ON Video at %lx>" % self
 
     def __str__(self):
         return "ON Video: " + self.title
-
+    """
 
 
 import os.path
@@ -118,6 +123,16 @@ player_vtypes = ('video/mp4', 'video/ogg', 'video/webm',
                      'application/x-shockwave-flash',
                      'application/octet-stream')
 
+
+def genUrl(prefix, folderspec, filename):
+    """Concatenate these three elements and make them a real URL.
+       No luck with urljoin(), so do it by hand for now.
+    """
+    tail = filename
+    if folderspec:
+        tail = folderspec + '/' + filename
+    return prefix + tail
+        
 
 def sortVideosList(videos, desiredsorting):
     """Sort the videos according to the list of extensions in
@@ -198,16 +213,21 @@ def getMetaDataFileHandle(view, context):
     view.player = settings.urlbase + config.PLAYER
     bpath = os.path.join(settings.fspath, context.filename)
     meta_path = bpath + ".metadata"
-    view.thumbnailurl = None
+    print "metadata: ", meta_path
+    view.urlprefix = ""
+    if '/' in context.filename:
+        view.urlprefix = context.filename[:context.filename.rfind('/')]
+    print "urlprefix: ", view.urlprefix
     if not os.path.exists(meta_path):
         print "no metadata for ", context
         setDefaultNoVideoValues(view, context)
         return None, settings
     mdfile = open(meta_path, "rb")
     # thumbnail file:
+    view.thumbnailurl = None
     thumb = mdfile.next().split(':', 1)
     if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-        view.thumbnailurl = settings.urlbase + thumb[1].strip()
+        view.thumbnailurl = genUrl(settings.urlbase, view.urlprefix, thumb[1].strip())
     ptime = mdfile.next().split(':', 1)
     if ptime[0].strip() == 'playing time' and len(ptime) > 1:
         pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
@@ -239,14 +259,14 @@ def readVideoMetaData(view, context):
     # MP4 videos available).
     view.directplay = None
     directplay = None
-    #import pdb; pdb.set_trace()
+    print "readVideoMetaData(), urlprefix = ", view.urlprefix
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
             vf = svid[1].strip()
             if len(vf) > 1 and vf[0] == '/':
                 vf = vf[1:]
-        if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
+        if len(vf) and os.path.exists(os.path.join(settings.fspath, view.urlprefix, vf)):
             directplay = vf
     # now read the alternative formats list:
     # make the videos unique:
@@ -259,9 +279,13 @@ def readVideoMetaData(view, context):
         # k: format, v: filename
         k, v = row.split(':', 1)
         v = v.strip()
-        #print "checking filenames: ", os.path.join(settings.fspath, v)
-        if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
-            videos[k] = vVideo(settings.urlbase + v, k)
+        #print "checking filenames: ", os.path.join(settings.fspath, view.urlprefix, v)
+        if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, view.urlprefix, v)):
+            #v_url = urljoin(settings.urlbase, view.urlprefix)
+            #v_url = urljoin(v_url, v)
+            v_url = genUrl(settings.urlbase, view.urlprefix, v)
+            #print "--- readVideoMetaData(): generated URL for key %s: %s" % (k, v_url)
+            videos[k] = vVideo(v_url, k)
             #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
     mdfile.close()
     vlist = videos.values()

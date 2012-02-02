@@ -1,5 +1,10 @@
 # schema etc. for videos
 
+# (c) 2012 oeko.net
+# c/o toni mueller <support@oeko.net>
+# license: GPLv3
+
+
 from five import grok
 from zope import schema
 
@@ -48,11 +53,6 @@ class IVideo(form.Schema):
     body = RichText(
         title=_(u"Long description (allows some HTML)"),
         )
-
-    #excludeFromNav = schema.Bool(
-    #    title=_('Exclude from navigation'),
-    #    default=False
-    #    )
 
     def __repr__(self):
         return "<ON Video at %lx>" % self
@@ -218,6 +218,89 @@ def getMetaDataFileHandle(view, context):
     return mdfile, settings
 
 
+def readVideoMetaData(view, context):
+    """Read the video.metadata file to set some parameters. Helper function.
+    """
+    (mdfile, settings) = getMetaDataFileHandle(view, context)
+    if not mdfile:                  # integrity error, but hey...
+        return
+
+    # playing time:
+
+    # set url to the video that should be played inline (how to manage different sizes?):
+    svid = mdfile.next().split(':', 1)
+
+    view._title = context.title
+    # Algorithm:
+    # We need to select an MP4 format video for direct play, if possible.
+    # To arrive at a consistent list of video files to play/download, we
+    # only remember the file name of the selected video and see, whether
+    # it occurs again later down the road (eg. should there be multiple
+    # MP4 videos available).
+    view.directplay = None
+    directplay = None
+    #import pdb; pdb.set_trace()
+    if svid[0].strip() == 'selected':
+        vf = None
+        if len(svid) > 1:
+            vf = svid[1].strip()
+            if len(vf) > 1 and vf[0] == '/':
+                vf = vf[1:]
+        if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
+            directplay = vf
+    # now read the alternative formats list:
+    # make the videos unique:
+    videos = {}
+    #print "--- readVideoMetaData(): videos = ", videos
+    for row in mdfile:
+        #print "... readVideoMetaData(): current row: -->%s<--" % row
+        if ':' not in row:
+            break
+        # k: format, v: filename
+        k, v = row.split(':', 1)
+        v = v.strip()
+        #print "checking filenames: ", os.path.join(settings.fspath, v)
+        if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
+            videos[k] = vVideo(settings.urlbase + v, k)
+            #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
+    mdfile.close()
+    vlist = videos.values()
+    #print "videos: ", vlist
+    view.playfiles = sortVideosForPlayer(vlist, directplay)
+    #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in view.playfiles ]
+    #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
+    view.directplay = view.playfiles[0]
+    # deep copy!!!
+    downloadlist = view.playfiles[:]
+    view.videos = sortVideosForDownload(downloadlist)
+
+
+class ViewThumbnail(grok.View):
+    grok.context(IVideo)
+    grok.require('zope2.View')
+    grok.name('summary')
+
+    """View to display the video within an album view."""
+
+    def __init__(self, context, request):
+        super(ViewThumbnail, self).__init__(context, request)
+        readVideoMetaData(self, context)
+
+    @memoize
+    def thumbnail(self):
+        """Calculate the URL to the thumbnail"""
+        #context = aq_inner(self.context)
+        if self.thumbnailurl is not None:
+            return self.thumbnailurl;
+        else:
+            return '/++resource++on.video/nothumbnail.png'
+
+    @memoize
+    def title(self):
+        """Return a part of the title, suitable for a gallery view."""
+        return self._title[:20]
+
+
 class View(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
@@ -226,73 +309,18 @@ class View(grok.View):
 
     def __init__(self, context, request):
         super(View, self).__init__(context, request)
-        self.readVideoMetaData(context)
-
-    def readVideoMetaData(self, context):
-        """Read the video.metadata file to set some parameters. Helper function.
-        """
-        (mdfile, settings) = getMetaDataFileHandle(self, context)
-        if not mdfile:                  # integrity error, but hey...
-            return
-
-        # playing time:
-
-        # set url to the video that should be played inline (how to manage different sizes?):
-        svid = mdfile.next().split(':', 1)
-
-        # Algorithm:
-        # We need to select an MP4 format video for direct play, if possible.
-        # To arrive at a consistent list of video files to play/download, we
-        # only remember the file name of the selected video and see, whether
-        # it occurs again later down the road (eg. should there be multiple
-        # MP4 videos available).
-        self.directplay = None
-        directplay = None
-        #import pdb; pdb.set_trace()
-        if svid[0].strip() == 'selected':
-            vf = None
-            if len(svid) > 1:
-                vf = svid[1].strip()
-                if len(vf) > 1 and vf[0] == '/':
-                    vf = vf[1:]
-            if len(vf) and os.path.exists(os.path.join(settings.fspath, vf)):
-                directplay = vf
-        # now read the alternative formats list:
-        # make the videos unique:
-        videos = {}
-        #print "--- readVideoMetaData(): videos = ", videos
-        for row in mdfile:
-            #print "... readVideoMetaData(): current row: -->%s<--" % row
-            if ':' not in row:
-                break
-            # k: format, v: filename
-            k, v = row.split(':', 1)
-            v = v.strip()
-            #print "checking filenames: ", os.path.join(settings.fspath, v)
-            if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, v)):
-                videos[k] = vVideo(settings.urlbase + v, k)
-                #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
-        mdfile.close()
-        vlist = videos.values()
-        #print "videos: ", vlist
-        self.playfiles = sortVideosForPlayer(vlist, directplay)
-        #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in self.playfiles ]
-        #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
-        self.directplay = self.playfiles[0]
-        # deep copy!!!
-        downloadlist = self.playfiles[:]
-        self.videos = sortVideosForDownload(downloadlist)
+        readVideoMetaData(self, context)
 
     @memoize
     def videofiles(self):
         """Return a list of video urls for download"""
-        context = aq_inner(self.context)
+        #context = aq_inner(self.context)
         return self.videos
 
     @memoize
     def playerchoices(self):
         """Return a list of video urls for the player"""
-        context = aq_inner(self.context)
+        #context = aq_inner(self.context)
         #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
         #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         return self.playfiles
@@ -300,7 +328,7 @@ class View(grok.View):
     @memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
-        context = aq_inner(self.context)
+        #context = aq_inner(self.context)
         if self.thumbnailurl is not None:
             return self.thumbnailurl;
         else:

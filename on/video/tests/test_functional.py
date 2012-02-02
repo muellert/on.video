@@ -177,6 +177,25 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
 
+    def test_video_summary_view(self):
+        """check whether the 'summary' view for the gallery works
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video4', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_3',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        browser.open(video.absolute_url() + '/@@summary')
+        self.failUnless('<div class="on-video-small-thumbnail">' in browser.contents)
+        self.failIf('<object>' in browser.contents)
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo

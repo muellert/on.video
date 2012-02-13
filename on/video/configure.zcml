@@ -11,6 +11,9 @@
   <!-- Include configuration for dependencies listed in setup.py -->
   <includeDependencies package="." />
   <include file="permissions.zcml" />
+
+  <include package=".browser" />
+
   <!--include package="plone.app.registry" / -->
 
   <!-- Grok the package to initialise schema interfaces and content classes -->
@@ -38,4 +41,4 @@
       permission="cmf.ManagePortal"
       />
 
-</configure>
+ </configure>

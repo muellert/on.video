@@ -1,0 +1,28 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:grok="http://namespaces.zope.org/grok"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="on.video">
+
+
+  <browser:menuItem
+      for="Products.ATContentTypes.interface.IATFolder"
+      menu="plone_displayviews"
+      title="Video Gallery"
+      action="@@videogallery"
+      description="List folder contents as a video gallery"
+      />
+
+  <browser:page
+      name="on-video-gallery"
+      for="Products.ATContentTypes.interface.IATFolder"
+      class=".videogallery.VideoGallery"
+      permission="zope2.View"
+      />
+
+
+</configure>

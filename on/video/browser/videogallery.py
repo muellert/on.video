@@ -40,7 +40,7 @@ from Products.ATContentTypes.interface import IATFolder
 from plone.memoize.instance import memoize
 
 from on.video import _
-
+from on.video.video import ViewThumbnail
 #grok.templatedir('templates')
 
 
@@ -98,9 +98,19 @@ class VideoGallery(grok.View):
         result = []
 
         for item in fl:
-            d = dict(title=item.title, type=item.getTypeInfo())
-            result.append(d)
-            # print "RESULT: " + str(result)
+            print "ITEM: " + str(item)
+            filename = item.filename
+            thumb = ViewThumbnail(item, self.request)
+            d = dict(
+                title = item.Title(),
+                description = item.description,
+                url = item.absolute_url(),
+                type = item.portal_type,
+                thumbnail = thumb.thumbnail()
+                )
+            print "RESULT: " + str(result)
+            if d['type'] == 'on.video.Video':
+                result.append(d)
             # >>> RESULT: [{'type': <DexterityFTI at /Plone/portal_types/on.video.Video>, 'title': u'Video 1'}]
 
 	

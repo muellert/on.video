@@ -30,14 +30,38 @@
 
             <!-- we don't want the dl -->
                   <metal:entries fill-slot="entries">
-
                    <metal:block use-macro="context/folder_listing/macros/entries">
 
-                     <tal:loop repeat="item folderContents">
-                       <metal:entry fill-slot="entry">
-                         <div tal:content="python:str(item.getObject())" />
-                       </metal:entry>
-		     </tal:loop>
+                     <tal:block tal:define="item_url item/url|string:'';
+                                            item_id item/getId|item/id;
+                                            item_title item/title;
+                                            item_description item/description;
+                                            item_thumbnail item/thumbnail;
+                                            ">
+
+                         <metal:entry fill-slot="entry">
+                           <div class="tileHeadline"
+                             metal:define-macro="listitem">
+
+                             <a href="#" class="videolink"
+                                tal:attributes="href item_url">
+			       <h3 tal:content="item_description">titel</h3>
+                               x <span tal:content="item/title" /> y
+                               <div class="playlistitem">
+                                 <!--<img class="vthumb" src="#" alt="#" title="#"
+                                      taxl:attributes="src item_thumbnail;
+				                      alt item_title;
+	                                              title item_title;"
+				 /> -->
+				 <br />
+                                 <div tal:content="item_description" />
+                               </div>
+                             </a>
+                           </div>
+
+                         </metal:entry>
+                     </tal:block>
+
                   </metal:block>
                 </metal:entries>
  	      </tal:listing>

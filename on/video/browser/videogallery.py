@@ -90,7 +90,7 @@ class VideoGallery(grok.View):
 
 
     @memoize
-    def update(self):
+    def itemlist(self):
         """Called before rendering the template for this view.
         """
         fl = self.context.folderlistingFolderContents()
@@ -102,17 +102,18 @@ class VideoGallery(grok.View):
             filename = item.filename
             thumb = ViewThumbnail(item, self.request)
             d = dict(
-                title = item.Title(),
+                videotitle = item.Title(),
                 description = item.description,
                 url = item.absolute_url(),
                 type = item.portal_type,
                 thumbnail = thumb.thumbnail()
                 )
-            print "RESULT: " + str(result)
+            print "ITEM: " + str(result)
             if d['type'] == 'on.video.Video':
                 result.append(d)
+            print "RESULT: " + str(result)
             # >>> RESULT: [{'type': <DexterityFTI at /Plone/portal_types/on.video.Video>, 'title': u'Video 1'}]
-
+        return result
 	
 
     @memoize

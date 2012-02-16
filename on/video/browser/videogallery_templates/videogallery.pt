@@ -13,12 +13,10 @@
     </metal:css>
 
     <metal:content-core fill-slot="content-core">
-        <metal:block use-macro="context/folder_listing/macros/content-core">
-         <metal:listingmacro define-macro="listing">
            <tal:foldercontents define="limit_display limit_display|request/limit_display|nothing;
                                        limit_display python:limit_display and int(limit_display) or None;
                                        more_url more_url|request/more_url|string:folder_contents;
-                                       folderContents view/fl;
+                                       folderContents view/itemlist;
                                        site_properties context/portal_properties/site_properties;
                                        use_view_action site_properties/typesUseViewActionInListings|python:();
                                        Batch python:modules['Products.CMFPlone'].Batch;
@@ -28,46 +26,33 @@
                                        navigation_root_url context/@@plone_portal_state/navigation_root_url">
                 <tal:listing condition="batch">
 
-            <!-- we don't want the dl -->
-                  <metal:entries fill-slot="entries">
-                   <metal:block use-macro="context/folder_listing/macros/entries">
-
-                     <tal:block tal:define="item_url item/url|string:'';
-                                            item_id item/getId|item/id;
-                                            item_title item/title;
+                  <div tal:repeat="item folderContents" class="videowrapper">
+                     <tal:block tal:define="item_title item/videotitle;
+                                            item_url item/url|string:'';
                                             item_description item/description;
                                             item_thumbnail item/thumbnail;
                                             ">
-
-                         <metal:entry fill-slot="entry">
-                           <div class="tileHeadline"
-                             metal:define-macro="listitem">
+                        <div tal:content="item_title" />
 
                              <a href="#" class="videolink"
                                 tal:attributes="href item_url">
-			       <h3 tal:content="item_description">titel</h3>
-                               x <span tal:content="item/title" /> y
+			       <h3><span tal:replace="python:str(item_title)" /></h3>
                                <div class="playlistitem">
-                                 <!--<img class="vthumb" src="#" alt="#" title="#"
+                                 <img class="vthumb" src="#" alt="#" title="#"
                                       taxl:attributes="src item_thumbnail;
 				                      alt item_title;
 	                                              title item_title;"
-				 /> -->
+				 />
 				 <br />
                                  <div tal:content="item_description" />
                                </div>
                              </a>
-                           </div>
 
-                         </metal:entry>
                      </tal:block>
+                 </div>
 
-                  </metal:block>
-                </metal:entries>
  	      </tal:listing>
 	    </tal:foldercontents>
-          </metal:listingmacro>
-        </metal:block>
     </metal:content-core>
 </body>
 </html>

@@ -34,9 +34,6 @@ from five import grok
 
 from Products.ATContentTypes.interface import IATFolder
 
-#from zope import schema
-#from plone.directives import form
-#from plone.namedfile.field import NamedBlobImage
 from plone.memoize.instance import memoize
 
 from on.video import _
@@ -67,9 +64,6 @@ def countFolderItems(folder):
         if not item.portal_type in ('Folder', 'on.video.Video'):
             continue
         counts[item.portal_type] += 1
-    #print "countFolderItems(%s): " % folder.id
-    #print " ----> ", counts['Folder'], counts['on.video.Video']
-    #print " ----> ", type(counts['Folder']), type(counts['on.video.Video'])
     return (counts['Folder'], counts['on.video.Video'])
 
 
@@ -86,9 +80,7 @@ def genSmallView(item, request = None):
         # assumption: the image is an ArcheTypes image
         if 'bannerimage' in item.keys():
             result['thumb'] = '%s/bannerimage/image' % item.id
-        print "genSmallView(): item= ", item
-        #result['thumb'] = '<a href="%s"><img src="%s" width="100" height="100" /></a><br/>%d galleries, %d videos' % \
-        #                  (item.id, result['banner'], folders, videos)
+        # print "genSmallView(): item= ", item
         result['title'] = item.title[0:20]
     elif item.portal_type == 'on.video.Video':
         result['sub_folder'] = None
@@ -98,7 +90,7 @@ def genSmallView(item, request = None):
         result['playingtime'] = vtn.playing_time
         result['thumb'] = vtn.thumbnail()
         result['title'] = vtn.title()
-    print "genSmallView(): result= ", result
+    # print "genSmallView(): result= ", result
     return result
 
 
@@ -107,7 +99,6 @@ class VideoGallery(grok.View):
     """
     grok.context(IATFolder)
     grok.require('zope2.View')
-    #grok.name('view') - redundant
 
     @memoize
     def getFolderContents(self):
@@ -123,7 +114,7 @@ class VideoGallery(grok.View):
         """
         fl = self.getFolderContents()
         self.contents = [ genSmallView(item, self.request) for item in fl ]
-        print "VideoGallery.update(): contents = ", self.contents
+        # print "VideoGallery.update(): contents = ", self.contents
         # import pdb; pdb.set_trace()
 
     @memoize

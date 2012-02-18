@@ -30,26 +30,19 @@
 
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
 
-
-            <!-- we don't want the dl >
-                  <metal:entries fill-slot="entries" -->
-                     <!--h4>Entries so far:</h4>
-                     <div tal:content="python:str(view.contents)" />
-                     <!--div>View contents:</div>
-                     <div tal:content="python: str(view.contents)" />
-                     <div>Loop:</div-->
                      <tal:loop repeat="item view/contents">
-			   <hr />
-		       <div tal:content="structure item" />
-			   <hr />
-		       <a href="#" tal:attributes="href item/id"><img src="#" tal:attributes="src nocall: item/thumb|item/banner" width="100" height="100" /></a>
+		       <a href="#" tal:attributes="href item/id">
+		         <h4 tal:content="item/title" />
+		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" width="100" height="100" />
+		       </a>
+		       <br />
 		       <div tal:condition="python:item['portaltype'] == 'Folder'">
-			 (<span tal:replace="item/sub_folder" /> galleries, <span tal:replace="item/sub_videos" /> videos)
+			 <span tal:replace="item/sub_folder" /> galleries, <span tal:replace="item/sub_videos" /> videos
 		       </div>
 		       <div tal:condition="python:item['portaltype'] == 'on.video.Video'">
-			 <span tal:replace="item/title" />
+			 Duration: <span tal:replace="item/playingtime" />
 		       </div>
-			   <br />
+		       
 		     </tal:loop>
 		       <div metal:use-macro="context/batch_macros/macros/navigation" />
 

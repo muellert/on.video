@@ -58,13 +58,6 @@ class IVideo(form.Schema):
         title=_(u"Long description (allows some HTML)"),
         )
 
-    """
-    def __repr__(self):
-        return "<ON Video at %lx>" % self
-
-    def __str__(self):
-        return "ON Video: " + self.title
-    """
 
 
 import os.path
@@ -213,13 +206,13 @@ def getMetaDataFileHandle(view, context):
     view.player = settings.urlbase + config.PLAYER
     bpath = os.path.join(settings.fspath, context.filename)
     meta_path = bpath + ".metadata"
-    print "metadata: ", meta_path
+    #print "metadata: ", meta_path
     view.urlprefix = ""
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
     print "urlprefix: ", view.urlprefix
     if not os.path.exists(meta_path):
-        print "no metadata for ", context
+        #print "no metadata for ", context
         setDefaultNoVideoValues(view, context)
         return None, settings
     mdfile = open(meta_path, "rb")
@@ -313,7 +306,6 @@ class ViewThumbnail(grok.View):
     @memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
-        #context = aq_inner(self.context)
         if self.thumbnailurl is not None:
             return self.thumbnailurl;
         else:
@@ -322,7 +314,7 @@ class ViewThumbnail(grok.View):
     @memoize
     def title(self):
         """Return a part of the title, suitable for a gallery view."""
-        return self._title[:20]
+        return self.context.title[:20]
 
 
 class View(grok.View):
@@ -338,13 +330,11 @@ class View(grok.View):
     @memoize
     def videofiles(self):
         """Return a list of video urls for download"""
-        #context = aq_inner(self.context)
         return self.videos
 
     @memoize
     def playerchoices(self):
         """Return a list of video urls for the player"""
-        #context = aq_inner(self.context)
         #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
         #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         return self.playfiles
@@ -352,7 +342,6 @@ class View(grok.View):
     @memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
-        #context = aq_inner(self.context)
         if self.thumbnailurl is not None:
             return self.thumbnailurl;
         else:

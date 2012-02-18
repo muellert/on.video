@@ -1,5 +1,10 @@
 # schema etc. for videos
 
+# (c) 2012 oeko.net
+# c/o toni mueller <support@oeko.net>
+# license: GPLv3
+
+
 import os, os.path
 
 from five import grok

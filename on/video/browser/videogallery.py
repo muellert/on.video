@@ -40,22 +40,12 @@ from Products.ATContentTypes.interface import IATFolder
 from plone.memoize.instance import memoize
 
 from on.video import _
+
 from on.video.video import ViewThumbnail
+
+
 #grok.templatedir('templates')
 
-
-
-"""
->>> fl = x.folderlistingFolderContents()
->>> fl
-[<Item at /01/mnt/Plone/x/somemovie>, <Item at /01/mnt/Plone/x/movie2>, <ATFolder at /01/mnt/Plone/x/blubb>, <Item at /01/mnt/Plone/x/video-in-folder>, <Item at /01/mnt/Plone/x/anothervideo>]
->>> fl[2].getTypeInfo().title
-'Folder'
->>> fl[1].getTypeInfo().title
-'Video'
->>>
-
-"""
 
 class FolderItems(object):
     """Collect attributes for folder entries."""
@@ -65,13 +55,52 @@ class FolderItems(object):
         self.filetype = self.calculateFileType(url)
 
 
-def genSmallView(item):
+def countFolderItems(folder):
+    """Filter the given list of folder contents for those elements
+       that are intended to be shown in the video gallery, and
+       count them.
+       Return a pair (folders, videos).
+    """
+    folderlisting = folder.folderlistingFolderContents()
+    counts = { 'Folder': 0, 'on.video.Video': 0 }
+    for item in folderlisting:
+        if not item.portal_type in ('Folder', 'on.video.Video'):
+            continue
+        counts[item.portal_type] += 1
+    #print "countFolderItems(%s): " % folder.id
+    #print " ----> ", counts['Folder'], counts['on.video.Video']
+    #print " ----> ", type(counts['Folder']), type(counts['on.video.Video'])
+    return (counts['Folder'], counts['on.video.Video'])
+
+
+def genSmallView(item, request = None):
     """Turn a content item into a dictionary. We only need specific
        information, depending on type.
     """
     result = dict(portaltype=item.portal_type, id=item.id, title=item.title)
-    
+    result['banner'] = '/++resource++on.video/nothumbnail.png'
+    if item.portal_type == 'Folder':
+        (folders, videos) = countFolderItems(item)
+        result['sub_folder'] = folders
+        result['sub_videos'] = videos
+        # assumption: the image is an ArcheTypes image
+        if 'bannerimage' in item.keys():
+            result['thumb'] = '%s/bannerimage/image' % item.id
+        print "genSmallView(): item= ", item
+        #result['thumb'] = '<a href="%s"><img src="%s" width="100" height="100" /></a><br/>%d galleries, %d videos' % \
+        #                  (item.id, result['banner'], folders, videos)
+        result['title'] = item.title[0:20]
+    elif item.portal_type == 'on.video.Video':
+        result['sub_folder'] = None
+        result['sub_videos'] = None
+        # this information is not accessible from here:
+        vtn = ViewThumbnail(item, request)
+        result['playingtime'] = vtn.playing_time
+        result['thumb'] = vtn.thumbnail()
+        result['title'] = vtn.title()
+    print "genSmallView(): result= ", result
     return result
+
 
 class VideoGallery(grok.View):
     """Default view, gallery style, for a video folder.
@@ -88,36 +117,17 @@ class VideoGallery(grok.View):
         return [ item for item in self.context.folderlistingFolderContents() if
                       item.portal_type in ('Folder', 'on.video.Video', 'Image') ]
 
-
     @memoize
-    def itemlist(self):
+    def update(self):
         """Called before rendering the template for this view.
         """
-        fl = self.context.folderlistingFolderContents()
-        self.contents = [ genSmallView(item) for item in fl ]
-        result = []
-
-        for item in fl:
-            print "ITEM: " + str(item)
-            filename = item.filename
-            thumb = ViewThumbnail(item, self.request)
-            d = dict(
-                videotitle = item.Title(),
-                description = item.description,
-                url = item.absolute_url(),
-                type = item.portal_type,
-                thumbnail = thumb.thumbnail()
-                )
-            print "ITEM: " + str(result)
-            if d['type'] == 'on.video.Video':
-                result.append(d)
-            print "RESULT: " + str(result)
-            # >>> RESULT: [{'type': <DexterityFTI at /Plone/portal_types/on.video.Video>, 'title': u'Video 1'}]
-        return result
-	
+        fl = self.getFolderContents()
+        self.contents = [ genSmallView(item, self.request) for item in fl ]
+        print "VideoGallery.update(): contents = ", self.contents
+        # import pdb; pdb.set_trace()
 
     @memoize
-    def videoListing(self):
+    def xxxvideoListing(self):
         """Get all child videos and video folders in this folder.
         """
         folder = self.context

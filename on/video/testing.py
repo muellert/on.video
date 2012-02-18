@@ -1,5 +1,9 @@
 # Testing on.video in Plone 4.1, using plone.app.testing:
 
+# (c) 2012 oeko.net
+# c/o toni mueller <support@oeko.net>
+# license: GPLv3
+
 import unittest2 as unittest
 #from Products.CMFCore.utils import getToolByName
 

@@ -1,3 +1,4 @@
+
 # gallery view for folders containing videos
 
 # (c) 2012 oeko.net
@@ -34,6 +35,7 @@ from five import grok
 
 from Products.ATContentTypes.interface import IATFolder
 
+from Products.CMFPlone.PloneBatch import Batch
 from plone.memoize.instance import memoize
 
 from on.video import _
@@ -46,11 +48,11 @@ from on.video.video import ViewThumbnail
 
 class FolderItems(object):
     """Collect attributes for folder entries."""
-    def __init__(self, data, datatype):
+    def __init__(self, data, datatype, start):
         self.data = data
         self.datatype = datatype
         self.filetype = self.calculateFileType(url)
-
+        self.start = start
 
 def countFolderItems(folder):
     """Filter the given list of folder contents for those elements
@@ -113,7 +115,9 @@ class VideoGallery(grok.View):
         """Called before rendering the template for this view.
         """
         fl = self.getFolderContents()
-        self.contents = [ genSmallView(item, self.request) for item in fl ]
+        b_start = int(self.context.REQUEST.get('b_start', 0))
+        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=3, start=b_start)
+    
         # print "VideoGallery.update(): contents = ", self.contents
         # import pdb; pdb.set_trace()
 

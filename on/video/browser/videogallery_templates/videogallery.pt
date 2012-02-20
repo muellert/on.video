@@ -18,19 +18,18 @@
            <tal:foldercontents define="limit_display limit_display|request/limit_display|nothing;
                                        limit_display python:limit_display and int(limit_display) or None;
                                        more_url more_url|request/more_url|string:folder_contents;
-                                       fl view/contents;
                                        site_properties context/portal_properties/site_properties;
                                        use_view_action site_properties/typesUseViewActionInListings|python:();
                                        Batch python:modules['Products.CMFPlone'].Batch;
+                                       foldercontents view/contents;
                                        b_start python:request.get('b_start', 0);
-                                       batch python:isinstance(fl, Batch) and fl or Batch(fl, limit_display or 10, int(b_start), orphan=1);
+                                       batch python:isinstance(foldercontents, Batch) and foldercontents or Batch(foldercontents, limit_display or 10, b_start, orphan=1);
                                        normalizeString nocall: context/plone_utils/normalizeString;
                                        navigation_root_url context/@@plone_portal_state/navigation_root_url">
                 <tal:listing condition="batch">
 
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
-
-                     <tal:loop repeat="item view/contents">
+		    <tal:loop repeat="item batch">
 		       <a href="#" tal:attributes="href item/id">
 		         <h4 tal:content="item/title" />
 		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" width="100" height="100" />

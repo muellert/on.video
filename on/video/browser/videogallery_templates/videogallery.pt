@@ -29,7 +29,7 @@
                 <tal:listing condition="batch">
 
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
-		    <tal:loop repeat="item batch">
+		    <div tal:repeat="item batch" class="smallvideo">
 		       <a href="#" tal:attributes="href item/id">
 		         <h4 tal:content="item/title" />
 		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" width="100" height="100" />
@@ -42,8 +42,8 @@
 			 Duration: <span tal:replace="item/playingtime" />
 		       </div>
 		       
-		     </tal:loop>
-		       <div metal:use-macro="context/batch_macros/macros/navigation" />
+		     </div>
+		     <div metal:use-macro="context/batch_macros/macros/navigation" />
 
                 <!--/metal:entries-->
  	      </tal:listing>

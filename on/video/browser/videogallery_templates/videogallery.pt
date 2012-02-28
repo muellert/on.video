@@ -7,12 +7,8 @@
       i18n:domain="plone">
 
 <body>
-    <metal:css fill-slot="css_slot">
-      <style type="text/css" media="all"
-        tal:content="string: @import url(${context/++resource++videolisting.css});"></style>
-    </metal:css>
-
     <metal:content-core fill-slot="content-core">
+      <div id="videowrapper">
         <!--metal:block use-macro="context/folder_listing/macros/content-core" -->
          <metal:listingmacro define-macro="listing">
            <tal:foldercontents define="limit_display limit_display|request/limit_display|nothing;
@@ -23,7 +19,7 @@
                                        Batch python:modules['Products.CMFPlone'].Batch;
                                        foldercontents view/contents;
                                        b_start python:request.get('b_start', 0);
-                                       batch python:isinstance(foldercontents, Batch) and foldercontents or Batch(foldercontents, limit_display or 10, b_start, orphan=1);
+                                       batch python:isinstance(foldercontents, Batch) and foldercontents or Batch(foldercontents, limit_display or 15, b_start, orphan=1);
                                        normalizeString nocall: context/plone_utils/normalizeString;
                                        navigation_root_url context/@@plone_portal_state/navigation_root_url">
                 <tal:listing condition="batch">
@@ -32,7 +28,7 @@
 		    <div tal:repeat="item batch" class="smallvideo">
 		       <a href="#" tal:attributes="href item/id">
 		         <h4 tal:content="item/title" />
-		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" width="100" height="100" />
+		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" />
 		       </a>
 		       <br />
 		       <div tal:condition="python:item['portaltype'] == 'Folder'">
@@ -43,12 +39,14 @@
 		       </div>
 		       
 		     </div>
+		     <div class="visualClear"></div>
 		     <div metal:use-macro="context/batch_macros/macros/navigation" />
 
                 <!--/metal:entries-->
  	      </tal:listing>
 	    </tal:foldercontents>
           </metal:listingmacro>
+        </div>
         <!--/metal:block-->
     </metal:content-core>
 </body>

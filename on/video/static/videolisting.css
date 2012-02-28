@@ -1,5 +1,22 @@
+#videowrapper {
+ width: 670px;
+}
+
 .smallvideo {
   float:left;
-  width: 100px;
+  padding: 0px 5px;
   overflow: hidden;
+}
+
+.smallvideo img {
+   width: 100px;
+   height: 100px;
+}
+
+.smallvideo div {
+   width: 110px;
+}
+
+.listingBar {
+ width: 670px;
 }

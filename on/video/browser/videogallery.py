@@ -116,7 +116,7 @@ class VideoGallery(grok.View):
         """
         fl = self.getFolderContents()
         b_start = int(self.context.REQUEST.get('b_start', 0))
-        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=3, start=b_start)
+        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
     
         # print "VideoGallery.update(): contents = ", self.contents
         # import pdb; pdb.set_trace()

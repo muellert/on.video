@@ -25,27 +25,32 @@
                 <tal:listing condition="batch">
 
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
-		    <div tal:repeat="item batch" class="smallvideo">
-		       <a href="#" tal:attributes="href item/id">
-		         <h4 tal:content="item/title" />
-		         <img src="#" tal:attributes="src nocall: item/thumb|item/banner" />
+		  <div tal:repeat="item batch">
+		    <div tal:define="odd repeat/item/odd"
+		         tal:attributes="class python:odd and 'even' or 'odd'">
+		      <a href="#" tal:attributes="href item/id" class="videothumb">
+		        <h4 tal:content="item/title" />
+		        <img src="#" tal:attributes="src nocall: item/thumb|item/banner" />
 		       </a>
 		       <br />
-		       <div tal:condition="python:item['portaltype'] == 'Folder'">
-			 <span tal:replace="item/sub_folder" /> galleries, <span tal:replace="item/sub_videos" /> videos
+		       <div tal:condition="python:item['portaltype'] == 'Folder'"
+			    class="videodesc">
+			   <span tal:replace="item/sub_folder" /> galleries, <span tal:replace="item/sub_videos" /> videos
 		       </div>
-		       <div tal:condition="python:item['portaltype'] == 'on.video.Video'">
-			 Duration: <span tal:replace="item/playingtime" />
+		       <div tal:condition="python:item['portaltype'] == 'on.video.Video'"
+			    class="videodesc">
+			   Duration: <span tal:replace="item/playingtime" />
 		       </div>
 		       
 		     </div>
-		     <div class="visualClear"></div>
-		     <div metal:use-macro="context/batch_macros/macros/navigation" />
+		   </div>
+		   <div class="visualClear"></div>
+		   <div metal:use-macro="context/batch_macros/macros/navigation" />
 
                 <!--/metal:entries-->
- 	      </tal:listing>
-	    </tal:foldercontents>
-          </metal:listingmacro>
+ 	        </tal:listing>
+	     </tal:foldercontents>
+           </metal:listingmacro>
         </div>
         <!--/metal:block-->
     </metal:content-core>

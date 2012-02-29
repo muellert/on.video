@@ -51,7 +51,7 @@
         </div>
 	<tal:downloadlinks tal:condition="view/videos">
 	<div class="video-download-block">
-	  <div>Download this video:</div>
+	  <div>Download this video:
 	    <ul class="video-downloadlinks-urllist">
 	      <li class="video-download-link"
 	         tal:repeat="video view/videos">
@@ -59,8 +59,10 @@
 	                tal:content="python: video.displayformat">Link to video file</a>
 	      </li>
 	    </ul>
+	  </div>
 	</div>
 	</tal:downloadlinks>
+	<div class="visualClear"></div>
 	<div class="video-description"
 	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
 	         long description here

@@ -2,21 +2,51 @@
  width: 670px;
 }
 
-.smallvideo {
+#videowrapper  .even,
+#videowrapper .odd {
   float:left;
   padding: 0px 5px;
   overflow: hidden;
+  text-align: center;
+  width: 30%;
 }
 
-.smallvideo img {
+#videowrapper .even {
+  background-color: #d6dae1;
+}
+
+#videowrapper h4 {
+  margin: 10px 5px 8px 5px;
+}
+
+.videothumb img {
    width: 100px;
    height: 100px;
 }
 
-.smallvideo div {
+div.videodesc {
    width: 110px;
+   margin: 0 auto;
 }
 
 .listingBar {
- width: 670px;
+  width: 670px;
+  border-top: 2px solid #5f71b5;
+  border-bottom: 2px solid #5f71b5;
+  padding: 5px 10px;
+  margin: 10px 0px;              
 }
+
+.video-download-block {
+margin-top: 10px;
+                        }
+
+.video-downloadlinks-urllist {
+  list-style-type: none;
+  margin: 0 0 0 -40px;
+}
+
+.video-downloadlinks-urllist li {
+  float: left;
+  margin-right: 25px;                                  
+ }                                  

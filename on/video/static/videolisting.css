@@ -37,6 +37,19 @@ div.videodesc {
   margin: 10px 0px;              
 }
 
+.listingBar .next {
+  float: left;
+}
+
+.listingBar .previous {
+  float: left;
+}
+
+.listingBar span {
+  display: block;
+  float: left;
+}
+
 .video-download-block {
 margin-top: 10px;
                         }

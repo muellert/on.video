@@ -7,16 +7,21 @@
 
 from five import grok
 from zope import schema
-
+from zope.interface import Interface
 from urlparse import urljoin
 
 from plone.directives import form
+from Products.CMFCore.utils import getToolByName
 
 #, dexterity
 from plone.memoize.instance import memoize
-
 from plone.app.textfield import RichText
 
+from plone.app.layout.globals.interfaces import IViewView
+from plone.app.layout.viewlets.interfaces import IBelowContent
+#from plone.app.layout.viewlets.interfaces import IBelowContentBody
+
+from Products.Archetypes.interfaces.base import IBaseContent
 #from plone.namedfile.field import NamedImage
 
 from on.video import _
@@ -210,7 +215,7 @@ def getMetaDataFileHandle(view, context):
     view.urlprefix = ""
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
-    print "urlprefix: ", view.urlprefix
+    # print "urlprefix: ", view.urlprefix
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(view, context)
@@ -252,7 +257,7 @@ def readVideoMetaData(view, context):
     # MP4 videos available).
     view.directplay = None
     directplay = None
-    print "readVideoMetaData(), urlprefix = ", view.urlprefix
+    # print "readVideoMetaData(), urlprefix = ", view.urlprefix
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
@@ -364,3 +369,45 @@ class View(grok.View):
         config="config={'playlist':['%s',{'url':'%s','autoPlay':false}]}" % \
                 (thumbnail, video)
         return config
+
+class IVSlide(Interface):
+    """Marker interface for slideshow"""
+
+class slideshow(grok.Adapter):
+    grok.context(IBaseContent)
+    grok.provides(IVSlide)
+
+    def __init__(self, context):
+        self.context = context
+
+    @property
+    def latest(self):
+        context = self.context
+        # import pdb; pdb.set_trace()
+        cat = getToolByName(context, 'portal_catalog')
+        
+        return cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:3]
+        # self.latest = catalog.searchResults(portal_type='Event')
+        # print "LATEST VIDEOS: " + str(self.latest)
+        # return srch
+
+class slideshowviewlet(grok.Viewlet):
+
+    grok.context(IBaseContent)
+    grok.view(IViewView)
+    grok.viewletmanager(IBelowContent)
+    grok.name('onvideo.slideshow')
+    grok.require('zope2.View')
+    
+    
+    def update(self):
+        context = self.context
+        self.slide = IVSlide(self.context)
+        self.ssrch = self.mlatest()
+        print "VIDEOS: " + str(self.ssrch)
+
+        # if self.latest is None:
+        #     return
+
+    def mlatest(self):
+        return self.slide.latest

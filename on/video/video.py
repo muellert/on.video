@@ -19,7 +19,7 @@ from plone.app.textfield import RichText
 
 from plone.app.layout.globals.interfaces import IViewView
 from plone.app.layout.viewlets.interfaces import IBelowContent
-#from plone.app.layout.viewlets.interfaces import IBelowContentBody
+from plone.app.layout.viewlets.interfaces import IBelowContentBody
 
 from Products.Archetypes.interfaces.base import IBaseContent
 #from plone.namedfile.field import NamedImage
@@ -395,7 +395,7 @@ class slideshowviewlet(grok.Viewlet):
 
     grok.context(IBaseContent)
     grok.view(IViewView)
-    grok.viewletmanager(IBelowContent)
+    grok.viewletmanager(IBelowContentBody)
     grok.name('onvideo.slideshow')
     grok.require('zope2.View')
     

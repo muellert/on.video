@@ -266,10 +266,9 @@ def readVideoMetaData(view, context):
                 vf = vf[1:]
         if len(vf) and os.path.exists(os.path.join(settings.fspath, view.urlprefix, vf)):
             directplay = vf
-    # now read the alternative formats list:
-    # make the videos unique:
+
     videos = {}
-    #print "--- readVideoMetaData(): videos = ", videos
+
     for row in mdfile:
         #print "... readVideoMetaData(): current row: -->%s<--" % row
         if ':' not in row:
@@ -279,17 +278,12 @@ def readVideoMetaData(view, context):
         v = v.strip()
         #print "checking filenames: ", os.path.join(settings.fspath, view.urlprefix, v)
         if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, view.urlprefix, v)):
-            #v_url = urljoin(settings.urlbase, view.urlprefix)
-            #v_url = urljoin(v_url, v)
             v_url = genUrl(settings.urlbase, view.urlprefix, v)
-            #print "--- readVideoMetaData(): generated URL for key %s: %s" % (k, v_url)
             videos[k] = vVideo(v_url, k)
             #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
     mdfile.close()
     vlist = videos.values()
-    #print "videos: ", vlist
     view.playfiles = sortVideosForPlayer(vlist, directplay)
-    #print "*** readVideoMetaData(): videos for player: ", [ r.url for r in view.playfiles ]
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
     view.directplay = view.playfiles[0]
     # deep copy!!!
@@ -403,8 +397,18 @@ class slideshowviewlet(grok.Viewlet):
     def update(self):
         context = self.context
         self.slide = IVSlide(self.context)
-        self.ssrch = self.mlatest()
-        print "VIDEOS: " + str(self.ssrch)
+        ssrch = self.mlatest()
+        self.vresults = []
+        for r in ssrch:
+            vobj = r.getObject()
+
+            # readVideoMetaData(self, vobj)
+            
+            vdata = {'vurl': str(r.getURL()),
+                     'title' : vobj.Title}
+
+            self.vresults.append(vdata)
+        # print "VIDEOS: " + str(self.ssrch)
 
         # if self.latest is None:
         #     return

@@ -1,6 +1,8 @@
 <dl id="slideshow">
   <dt>Latest videos</dt>
-  <dd tal:repeat="vid viewlet/ssrch">
-    <div class="slider" tal:content="vid/title" />
+  <dd tal:repeat="vid viewlet/vresults">
+    <a href="#" tal:attributes="href vid/vurl" class="slider">
+	<span tal:content="vid/title" />
+    </a>
   </dd>
 </dl>

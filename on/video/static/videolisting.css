@@ -62,4 +62,16 @@ margin-top: 10px;
 .video-downloadlinks-urllist li {
   float: left;
   margin-right: 25px;                                  
- }                                  
+ }
+
+
+#slideshow dd {
+  float: left;
+}
+
+#slideshow dd div {
+  width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+                    

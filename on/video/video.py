@@ -401,11 +401,17 @@ class slideshowviewlet(grok.Viewlet):
         self.vresults = []
         for r in ssrch:
             vobj = r.getObject()
-
-            # readVideoMetaData(self, vobj)
+            # import pdb; pdb.set_trace()
+            readVideoMetaData(self, vobj)
+            try:
+                vthumb = vobj.thumbnailurl;
+            except:
+                vthumb = '/++resource++on.video/nothumbnail.png'
+            
             
             vdata = {'vurl': str(r.getURL()),
-                     'title' : vobj.Title}
+                     'title' : vobj.Title,
+                     'vthumb': str(vthumb)}
 
             self.vresults.append(vdata)
         # print "VIDEOS: " + str(self.ssrch)
@@ -415,3 +421,9 @@ class slideshowviewlet(grok.Viewlet):
 
     def mlatest(self):
         return self.slide.latest
+
+    @memoize
+    def thumbnail(self):
+
+        """Calculate the URL to the thumbnail"""
+

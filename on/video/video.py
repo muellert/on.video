@@ -291,7 +291,7 @@ def readVideoMetaData(view, context):
     view.videos = sortVideosForDownload(downloadlist)
 
 
-class ViewThumbnail(grok.View):
+class ViewThumbnail(grok.View)               :
     grok.context(IVideo)
     grok.require('zope2.View')
     grok.name('summary')
@@ -402,16 +402,11 @@ class slideshowviewlet(grok.Viewlet):
         for r in ssrch:
             vobj = r.getObject()
             # import pdb; pdb.set_trace()
-            readVideoMetaData(self, vobj)
-            try:
-                vthumb = vobj.thumbnailurl;
-            except:
-                vthumb = '/++resource++on.video/nothumbnail.png'
-            
+            vtb = ViewThumbnail(vobj, vobj)
             
             vdata = {'vurl': str(r.getURL()),
-                     'title' : vobj.Title,
-                     'vthumb': str(vthumb)}
+                     'title' : vtb.title(),
+                     'vthumb': vtb.thumbnail()}
 
             self.vresults.append(vdata)
         # print "VIDEOS: " + str(self.ssrch)

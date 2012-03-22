@@ -291,7 +291,7 @@ def readVideoMetaData(view, context):
     view.videos = sortVideosForDownload(downloadlist)
 
 
-class ViewThumbnail(grok.View)               :
+class ViewThumbnail(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
     grok.name('summary')

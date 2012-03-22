@@ -364,10 +364,13 @@ class View(grok.View):
                 (thumbnail, video)
         return config
 
+
+
 class IVSlide(Interface):
     """Marker interface for slideshow"""
 
-class slideshow(grok.Adapter):
+
+class SlideShow(grok.Adapter):
     grok.context(IBaseContent)
     grok.provides(IVSlide)
 
@@ -376,6 +379,7 @@ class slideshow(grok.Adapter):
 
     @property
     def latest(self):
+        """Return the few latest videos, sorted on publishing date."""
         context = self.context
         # import pdb; pdb.set_trace()
         cat = getToolByName(context, 'portal_catalog')
@@ -385,7 +389,7 @@ class slideshow(grok.Adapter):
         # print "LATEST VIDEOS: " + str(self.latest)
         # return srch
 
-class slideshowviewlet(grok.Viewlet):
+class SlideShowViewlet(grok.Viewlet):
 
     grok.context(IBaseContent)
     grok.view(IViewView)
@@ -417,8 +421,7 @@ class slideshowviewlet(grok.Viewlet):
     def mlatest(self):
         return self.slide.latest
 
-    @memoize
-    def thumbnail(self):
-
-        """Calculate the URL to the thumbnail"""
+#    @memoize
+#    def thumbnail(self):
+#        """Calculate the URL to the thumbnail"""
 

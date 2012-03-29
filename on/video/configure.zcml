@@ -32,6 +32,18 @@
       provides="Products.GenericSetup.interfaces.EXTENSION"
       />
 
+ <!-- setuphandler registration -->
+
+  <genericsetup:importStep
+      name="on.video-videofolders"
+      title="on.video import handler"
+      description="Set up Folders for video resources"
+      handler=".setuphandlers.setupVideoResources">
+    <depends name="plone-final"/>
+  </genericsetup:importStep>
+  
+
+
   <!-- -*- extra stuff goes here -*- -->
 
   <!-- Control panel -->

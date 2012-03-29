@@ -65,11 +65,11 @@ margin-top: 10px;
  }
 
 
-#slideshow dd {
+#featured dd {
   float: left;
 }
 
-#slideshow dd div {
+#featured dd div {
   width: 100px;
   overflow: hidden;
   white-space: nowrap;

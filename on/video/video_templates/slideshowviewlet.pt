@@ -1,7 +1,7 @@
-<dl id="slideshow">
+<dl id="featured">
   <dt><h3>Latest videos</h3></dt>
   <dd tal:repeat="vid viewlet/vresults">
-    <a href="#" tal:attributes="href vid/vurl" class="slider">
+    <a href="#" tal:attributes="href vid/vurl" class="fvideo">
 	<div tal:content="vid/title" />
 
 	  <img src="#" width="100" height="90"

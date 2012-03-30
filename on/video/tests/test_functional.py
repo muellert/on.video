@@ -54,6 +54,8 @@ class TestOnVideoHandling(unittest.TestCase):
         shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
         shutil.copy(sampledata, self.td)
+        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_4.metadata')
+        shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
         shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
@@ -106,9 +108,9 @@ class TestOnVideoHandling(unittest.TestCase):
         video = self.portal[v]
         view = video.restrictedTraverse('@@view')
         downloads = view.videofiles()
-        print "downloads: ", [ r.url for r in downloads ]
+        #print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
-        print "playlist: ", playlist
+        #print "playlist: ", playlist
         #import pdb; pdb.set_trace()
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
@@ -147,6 +149,29 @@ class TestOnVideoHandling(unittest.TestCase):
                                       author = 'me, myself',
                                       recorded = datetime.now(),
                                       filename = 'no-metadata',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        # Commit so that the test browser knows about this (see optilux.cinemacontent):
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        browser.open(video.absolute_url())
+        #print "result: ", browser.contents
+        self.failUnless('nometafile' in browser.contents)
+
+    def test_read_video_metadata_no_video(self):
+        """Create a video object that has a metadata file that points to
+           non-existent video files..
+           See whether the code detects this properly and
+           displays the appropriate placeholder image.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video5', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_4',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
         # Commit so that the test browser knows about this (see optilux.cinemacontent):

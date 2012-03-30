@@ -43,8 +43,6 @@ from on.video import _
 from on.video.video import ViewThumbnail
 
 
-#grok.templatedir('templates')
-
 
 class FolderItems(object):
     """Collect attributes for folder entries."""

@@ -219,6 +219,7 @@ def getMetaDataFileHandle(view, context):
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(view, context)
+        view.thumbnailurl = '/++resource++on.video/nometafile.png'
         return None, settings
     mdfile = open(meta_path, "rb")
     # thumbnail file:
@@ -285,7 +286,9 @@ def readVideoMetaData(view, context):
     vlist = videos.values()
     view.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
-    view.directplay = view.playfiles[0]
+    #view.directplay = view.playfiles[0]
+    if len(view.playfiles) == 0:
+        setDefaultNoVideoValues(view, context)
     # deep copy!!!
     downloadlist = view.playfiles[:]
     view.videos = sortVideosForDownload(downloadlist)

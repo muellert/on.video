@@ -255,7 +255,15 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(v.displayformat == 'OGV')
         self.failUnless(v.filetype == 'video/ogg')
 
-
+    def test_videofolders(self):
+        self.failUnless('videoresources' in self.portal.objectIds())
+        folder = getattr(self.portal, 'videoresources')
+        self.assertEqual(folder.portal_type, 'Folder')
+        #self.assertEqual(folder._ordering, 'unordered')
+        self.assertEqual(folder.getRawLocallyAllowedTypes(), ('on.video.Video', 'Folder'))
+        self.assertEqual(folder.getRawImmediatelyAddableTypes(), ('on.video.Video', 'Folder'))
+        self.assertEqual(folder.checkCreationFlag(), False)
+        self.failUnless('featured_videos' in folder.keys())
 
 
 

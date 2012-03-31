@@ -13,6 +13,8 @@ from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import IntegrationTesting
 from plone.app.testing import FunctionalTesting
 
+import Products.CMFPlone
+
 #from plone.app.testing import TEST_USER_ID
 #from plone.app.testing import TEST_USER_NAME
 #from plone.app.testing import TEST_USER_PASSWORD
@@ -23,6 +25,7 @@ from plone.app.testing import applyProfile
 
 from plone.testing import z2
 from plone.registry.interfaces import IRegistry
+from Products.CMFCore.utils import getToolByName
 
 class OnVideoFixture(PloneSandboxLayer):
     defaultBases = (PLONE_FIXTURE,)
@@ -30,10 +33,14 @@ class OnVideoFixture(PloneSandboxLayer):
     def setUpZope(self, app, configurationContext):
         import on.video
         self.loadZCML(package=on.video)
+        self.loadZCML(package=Products.CMFPlone)
 
     def setUpPloneSite(self, portal):
+        wftool = getToolByName(portal, 'portal_workflow')
+        wftool.setDefaultChain('folder_workflow')
         """Run the GS profile for this product"""
         self.applyProfile(portal, 'on.video:default')
+        #import pdb; pdb.set_trace()
 
 
     def tearDownZope(self, app):

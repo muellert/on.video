@@ -13,7 +13,7 @@
         <div class="on-video-thumbnail">
 	  <!-- hardcode the dimension for now: -->
 	    <video tal:attributes="poster view/thumbnail"
-	           width="720" height="576" controls="control"
+	           width="720" height="540" controls="control"
 	           poster="#" tabindex="0">
 	        <!-- list the available video files for the player: -->
        	        <source tal:repeat="ps view/playerchoices" src="#" type="#"

@@ -30,7 +30,7 @@ def setupVideoResources(context):
     wftool = getToolByName(site, "portal_workflow")
     # existing = site.keys()
     
-    if 'Videoresources' not in site.keys():
+    if 'videoresources' not in site.keys():
     
         descr = "This folder contains one Subfolder 'Featured Videos' which should\
         contain some Videos. These are shown at the bottom of any page. \
@@ -47,7 +47,7 @@ def setupVideoResources(context):
     videoresources.setLocallyAllowedTypes(['on.video.Video', 'Folder'])
     videoresources.setImmediatelyAddableTypes(['on.video.Video', 'Folder'])
 
-    if 'Featured Videos' not in videoresources.keys():
+    if 'featured_videos' not in videoresources.keys():
 
         descr = "Copy & paste some videos into this Folder that should be shown \
         at the bottom of any text page. If there are more than 5 Videos in here, \

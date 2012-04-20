@@ -1,0 +1,23 @@
+<dl class="portlet portletFeaturedVideo">
+
+    <dt class="portletHeader">
+       <span class="portletTopLeft"></span>
+        <span class = "tile" tal:content="view/title" />
+        <span class="portletTopRight"></span>
+    </dt>
+
+    <dd class="portletItem" tal:repeat="vid view/featuredvideos">
+     <a href="#" tal:attributes="href vid/vurl" class="fvideo">
+	<div tal:content="vid/title" />
+
+	  <img src="#" width="100" height="90"
+	       alt="#" title="#"
+	       tal:attributes="src vid/vthumb;
+	                       alt vid/title;
+	                       title vid/title"
+	  />
+	  <br />	
+      </a>
+
+    </dd>
+</dl>

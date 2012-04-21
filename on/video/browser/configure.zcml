@@ -8,6 +8,9 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     i18n_domain="on.video">
 
+  <five:registerPackage package="." initialize=".initialize" />
+
+  <include package="plone.app.portlets"/>
 
   <browser:menuItem
       for="Products.ATContentTypes.interface.IATFolder"
@@ -24,5 +27,13 @@
       permission="zope2.View"
       />
 
+  <plone:portlet
+      name="irill.FeaturedVideos"
+      interface=".featuredportlet.IFeaturedVideos"
+      assignment=".featuredportlet.Assignment"
+      renderer=".featuredportlet.Renderer"
+      addview=".featuredportlet.AddForm"
+      editview=".featuredportlet.EditForm"
+      />
 
 </configure>

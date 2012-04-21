@@ -15,11 +15,10 @@ from on.video import _
 
 class IFeaturedVideos(IPortletDataProvider):
 
-    title = schema.TextLine(title=u'Title',
+    header = schema.TextLine(title=u'Portlet Title',
                             description=u'',
                             max_length=40, 
-                            required=True,
-                            default=u'Our Best Videos')
+                            required=True)
 
     entries = schema.Int(title=_(u'Number of Videos to display'),
                        description=_(u'How many items to list.'),
@@ -30,16 +29,16 @@ class IFeaturedVideos(IPortletDataProvider):
 class Assignment(base.Assignment):
     implements(IFeaturedVideos)
 
-    title = u'Our Best Videos'
+    header = u'Our Best Videos'
     entries = 3
     
-    def __init__(self, title=u'Our Best Videos', entries=3):
-        self.title = title
+    def __init__(self, header=u"", entries=3):
+        self.header = header
         self.entries = entries
 
     @property
     def title(self):
-        return self.title
+        return self.header
 
 
 class AddForm(base.AddForm):

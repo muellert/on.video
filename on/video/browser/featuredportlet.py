@@ -12,6 +12,7 @@ from plone.portlets.interfaces import IPortletDataProvider
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 from on.video import _
+from on.video.video import IVideo
 
 class IFeaturedVideos(IPortletDataProvider):
 
@@ -80,4 +81,4 @@ class Renderer(base.Renderer):
     @memoize
     def _data(self):
         limit = self.data.entries
-        return cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:limit]
+        return self.cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:limit]

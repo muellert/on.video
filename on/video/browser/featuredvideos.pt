@@ -2,7 +2,7 @@
 
     <dt class="portletHeader">
        <span class="portletTopLeft"></span>
-        <span class = "tile" tal:content="view/title" />
+        <span class = "tile" tal:content="view/data/header" />
         <span class="portletTopRight"></span>
     </dt>
 

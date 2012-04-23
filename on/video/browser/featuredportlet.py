@@ -17,7 +17,7 @@ from on.video.video import IVideo
 class IFeaturedVideos(IPortletDataProvider):
 
     header = schema.TextLine(title=u'Portlet Title',
-                            description=u'',
+                            description=u'Title of the rendered Portlet',
                             max_length=40, 
                             required=True)
 
@@ -30,8 +30,8 @@ class IFeaturedVideos(IPortletDataProvider):
 class Assignment(base.Assignment):
     implements(IFeaturedVideos)
 
-    header = u'Our Best Videos'
-    entries = 3
+    # header = _(u'x', default=u"Best Videos")
+    # entries = 3
     
     def __init__(self, header=u"", entries=3):
         self.header = header
@@ -48,8 +48,9 @@ class AddForm(base.AddForm):
     description = u"Configure the portlet."
 
     def create(self, data):
-        return Assignment()
-
+        # import pdb; pdb.set_trace()
+        return Assignment(header=data['header'],
+                          entries=data['entries'])
 
 class EditForm(base.EditForm):
     form_fields = form.Fields(IFeaturedVideos)

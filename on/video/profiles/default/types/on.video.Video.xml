@@ -26,7 +26,8 @@
      <element value="plone.app.dexterity.behaviors.metadata.ICategorization"/>
      <element
 	 value="plone.app.dexterity.behaviors.exclfromnav.IExcludeFromNavigation"/>
-     <element value="collective.flowplayer.behaviors.IFlowplayerFile"/>
+
+     <!-- element value="collective.flowplayer.behaviors.IFlowplayerFile"/ -->
      <element value="plone.app.dexterity.behaviors.metadata.IOwnership"/>
      <element
 	 value="plone.app.referenceablebehavior.referenceable.IReferenceable"/>

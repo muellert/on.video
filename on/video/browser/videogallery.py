@@ -43,7 +43,6 @@ from on.video import _
 from on.video.video import ViewThumbnail
 
 
-
 class FolderItems(object):
     """Collect attributes for folder entries."""
     def __init__(self, data, datatype, start):
@@ -115,13 +114,3 @@ class VideoGallery(grok.View):
         fl = self.getFolderContents()
         b_start = int(self.context.REQUEST.get('b_start', 0))
         self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
-    
-        # print "VideoGallery.update(): contents = ", self.contents
-        # import pdb; pdb.set_trace()
-
-    @memoize
-    def xxxvideoListing(self):
-        """Get all child videos and video folders in this folder.
-        """
-        folder = self.context
-        items = folder.keys()

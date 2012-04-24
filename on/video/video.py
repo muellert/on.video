@@ -187,7 +187,9 @@ import config
 
 def setDefaultNoVideoValues(view, context):
     view.thumbnailurl = '/++resource++on.video/novideo.png'
-    view.playing_time = '00:00:00'
+    view.playing_time = 'unknown'
+    view.dimension_x = '720'
+    view.dimension_y = '540'
     view.videos = []
     view.playfiles = []
 
@@ -224,30 +226,41 @@ def getMetaDataFileHandle(view, context):
     mdfile = open(meta_path, "rb")
     # thumbnail file:
     view.thumbnailurl = None
-    thumb = mdfile.next().split(':', 1)
+    lines = mdfile.readlines(2000)
+    mdfile.close()
+    line = lines.pop(0)
+    thumb = line.split(':', 1)
     if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
         view.thumbnailurl = genUrl(settings.urlbase, view.urlprefix, thumb[1].strip())
-    ptime = mdfile.next().split(':', 1)
+    line = lines.pop(0)
+    ptime = line.split(':', 1)
     if ptime[0].strip() == 'playing time' and len(ptime) > 1:
         pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
         if pt:
             view.playing_time = pt.group()
         else:
             view.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
-    return mdfile, settings
+    return lines, settings
 
 
 def readVideoMetaData(view, context):
     """Read the video.metadata file to set some parameters. Helper function.
     """
-    (mdfile, settings) = getMetaDataFileHandle(view, context)
-    if not mdfile:                  # integrity error, but hey...
+    from config import MAX_WIDTH
+    from config import DEFAULT_WIDTH
+    from config import MIN_HEIGHT
+    from config import MAX_HEIGHT
+    from config import DEFAULT_HEIGHT
+
+    (lines, settings) = getMetaDataFileHandle(view, context)
+    if not lines:                  # integrity error, but hey...
         return
 
     # playing time:
 
     # set url to the video that should be played inline (how to manage different sizes?):
-    svid = mdfile.next().split(':', 1)
+    line = lines.pop(0)
+    svid = line.split(':', 1)
 
     view._title = context.title
     # Algorithm:
@@ -259,6 +272,7 @@ def readVideoMetaData(view, context):
     view.directplay = None
     directplay = None
     # print "readVideoMetaData(), urlprefix = ", view.urlprefix
+    #import pdb; pdb.set_trace()
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
@@ -267,10 +281,31 @@ def readVideoMetaData(view, context):
                 vf = vf[1:]
         if len(vf) and os.path.exists(os.path.join(settings.fspath, view.urlprefix, vf)):
             directplay = vf
-
+    #print "*** remaining lines:"
+    #print lines
+    view.x = DEFAULT_WIDTH
+    view.y = DEFAULT_HEIGHT
+    if 'default size' in lines[0]:          # skip if we don't have it, but don't eat the line
+        line = lines.pop(0)
+        dimensions = line.split(':', 1)
+        #print "*** reading the specified default size"
+        x, y = map(int, dimensions[1].strip().split('x', 1))
+        # make sure the video doesn't get too small or too big:
+        if x < 100 or x > MAX_WIDTH:
+            print "need to adjust the default size (x)"
+            x = DEFAULT_WIDTH
+        if y < MIN_HEIGHT or y > MAX_HEIGHT:
+            print "need to adjust the default size (y)"
+            y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
+        view.x = x
+        view.y = y
+    else:
+        #print "going with the default video size"
+        #lines.insert(0, line)
+    print "video dimensions: ", view.x, view.y
     videos = {}
 
-    for row in mdfile:
+    for row in lines:
         #print "... readVideoMetaData(): current row: -->%s<--" % row
         if ':' not in row:
             break
@@ -282,7 +317,6 @@ def readVideoMetaData(view, context):
             v_url = genUrl(settings.urlbase, view.urlprefix, v)
             videos[k] = vVideo(v_url, k)
             #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
-    mdfile.close()
     vlist = videos.values()
     view.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
@@ -328,6 +362,7 @@ class View(grok.View):
     def __init__(self, context, request):
         super(View, self).__init__(context, request)
         readVideoMetaData(self, context)
+        print "Video Dimensions from within View: ", self.x, self.y
 
     @memoize
     def videofiles(self):
@@ -384,7 +419,6 @@ class SlideShow(grok.Adapter):
     def latest(self):
         """Return the few latest videos, sorted on publishing date."""
         context = self.context
-        # import pdb; pdb.set_trace()
         cat = getToolByName(context, 'portal_catalog')
         
         return cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:3]

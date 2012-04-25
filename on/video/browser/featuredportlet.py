@@ -48,7 +48,6 @@ class AddForm(base.AddForm):
     description = u"Configure the portlet."
 
     def create(self, data):
-        # import pdb; pdb.set_trace()
         return Assignment(header=data['header'],
                           entries=data['entries'])
 
@@ -74,6 +73,8 @@ class Renderer(base.Renderer):
     @property
     def available(self):
         """Show the portlet only if there are one or more elements."""
+        print "GOT RESULTS: " + str(len(self._data))
+        print str(len(self._data()))
         return not len(self._data())
 
     def featuredvideos(self):
@@ -81,5 +82,8 @@ class Renderer(base.Renderer):
 
     @memoize
     def _data(self):
+        # import pdb; pdb.set_trace()
         limit = self.data.entries
-        return self.cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:limit]
+        results = self.cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:limit]
+        print "RESULTS: " + results
+        return results

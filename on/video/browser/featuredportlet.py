@@ -80,7 +80,7 @@ class Renderer(base.Renderer):
     def viewthumb(self):
         rlist = []
         res = self._data()
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for i in res:
             rdict = {'url': i.getURL()}
             obj = i.getObject()

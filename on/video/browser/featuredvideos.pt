@@ -6,13 +6,13 @@
         <span class="portletTopRight"></span>
     </dt>
 
-    <dd class="portletItem" tal:repeat="vid view/featuredvideos">
-     <a href="#" tal:attributes="href vid/vurl" class="fvideo">
+    <dd class="portletItem" tal:repeat="vid view/viewthumb">
+     <a href="#" tal:attributes="href vid/url" class="fvideo">
 	<div tal:content="vid/title" />
 
 	  <img src="#" width="100" height="90"
 	       alt="#" title="#"
-	       tal:attributes="src vid/vthumb;
+	       tal:attributes="src vid/viewthumb;
 	                       alt vid/title;
 	                       title vid/title"
 	  />

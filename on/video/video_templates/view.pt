@@ -11,18 +11,21 @@
     <metal:content-core define-macro="content-core">
 
         <div class="on-video-thumbnail">
-	  <!-- hardcode the dimension for now: -->
-	    <video tal:attributes="poster view/thumbnail"
-	           width="720" height="576" controls="control"
-	           poster="#" tabindex="0">
+          <video tal:attributes="poster view/thumbnail;
+                                 width  view/x;
+                                 height view/y;"
+                 width="#" height="#" controls="control">
+
 	        <!-- list the available video files for the player: -->
        	        <source tal:repeat="ps view/playerchoices" src="#" type="#"
 	                tal:attributes="src ps/url;
 	                                type ps/filetype" />
 	        <!-- specify the actual player: -->
-	        <object tal:attributes="data view/player"
-	                                width="720" height="576"
-	                type="application/x-shockwave-flash" data="#">
+                <object tal:attributes="data view/player;
+	                                width  view/x;
+                                        height view/y;"
+                                        width="#" height="#"
+	                                type="application/x-shockwave-flash" data="#">
 	            <param tal:attributes="value view/player" name="movie" value="#" />
 	            <param value="true" name="allowFullScreen">
 	            <param value="transparent" name="wmode">

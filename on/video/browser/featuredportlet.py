@@ -12,7 +12,7 @@ from plone.portlets.interfaces import IPortletDataProvider
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 from on.video import _
-from on.video.video import IVideo
+from on.video.video import IVideo, ViewThumbnail
 
 class IFeaturedVideos(IPortletDataProvider):
 
@@ -73,9 +73,23 @@ class Renderer(base.Renderer):
     @property
     def available(self):
         """Show the portlet only if there are one or more elements."""
-        print "GOT RESULTS: " + str(len(self._data))
-        print str(len(self._data()))
-        return not len(self._data())
+        if len(self._data()) > 0:
+               return True
+        return False
+
+    def viewthumb(self):
+        rlist = []
+        res = self._data()
+        import pdb; pdb.set_trace()
+        for i in res:
+            rdict = {'url': i.getURL()}
+            obj = i.getObject()
+            vth = ViewThumbnail(obj, obj)            
+            rdict['thumbnail'] = vth.thumbnail()
+            rdict['title'] = vth.title()
+            rlist.append(rdict)
+
+        return rlist 
 
     def featuredvideos(self):
         return self._data()
@@ -85,5 +99,7 @@ class Renderer(base.Renderer):
         # import pdb; pdb.set_trace()
         limit = self.data.entries
         results = self.cat(object_provides=IVideo.__identifier__,sort_on='effective',sort_order='ascending')[:limit]
-        print "RESULTS: " + results
+        # print "RESULTS: " + str(results)
         return results
+
+        

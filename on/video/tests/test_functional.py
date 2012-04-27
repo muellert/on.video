@@ -48,14 +48,17 @@ class TestOnVideoHandling(unittest.TestCase):
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
-        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_1.metadata')
-        shutil.copy(sampledata, self.td)
-        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_2.metadata')
-        shutil.copy(sampledata, self.td)
-        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
-        shutil.copy(sampledata, self.td)
-        sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_4.metadata')
-        shutil.copy(sampledata, self.td)
+        for i in range(1, 6):
+            sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_%d.metadata' % i)
+            shutil.copy(sampledata, self.td)
+        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_2.metadata')
+        #shutil.copy(sampledata, self.td)
+        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
+        #shutil.copy(sampledata, self.td)
+        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_4.metadata')
+        #shutil.copy(sampledata, self.td)
+        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_5.metadata')
+        #shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
         shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
@@ -247,6 +250,61 @@ class TestOnVideoHandling(unittest.TestCase):
         downloads = view.videofiles()
         for video in downloads:
             self.failUnless('http://localhost/subfolder/' in video.url)
+
+    def test_read_video_default_dimensions_handling(self):
+        """See whether the dimensions are set correctly if the metadata file
+           does not include the "default size" entry.
+        """
+        from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
+        v = self.portal.invokeFactory('on.video.Video', 'video6', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_3',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        #import pdb; pdb.set_trace()
+        view = video.restrictedTraverse('@@view')
+        self.failUnless(view.x == DEFAULT_WIDTH)
+        self.failUnless(view.y == DEFAULT_HEIGHT)
+
+    def test_read_video_custom_dimensions_handling(self):
+        """See whether the dimensions are set correctly if the metadata file
+           does not include the "default size" entry.
+        """
+        from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
+        v = self.portal.invokeFactory('on.video.Video', 'video7', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_4',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        view = video.restrictedTraverse('@@view')
+        self.failUnless(view.x == 690)
+        self.failUnless(view.y == 535)
+
+    def test_read_video_weird_dimensions_handling(self):
+        """See whether the dimensions are set correctly if the metadata file
+           does not include the "default size" entry.
+        """
+        from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
+        v = self.portal.invokeFactory('on.video.Video', 'video8', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_5',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        view = video.restrictedTraverse('@@view')
+        self.failUnless(view.x == DEFAULT_WIDTH)
+        self.failUnless(view.y == DEFAULT_HEIGHT)
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo

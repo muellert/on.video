@@ -48,8 +48,7 @@ class AddForm(base.AddForm):
     description = u"Configure the portlet."
 
     def create(self, data):
-        return Assignment(header=data['header'],
-                          entries=data['entries'])
+        return Assignment(**data)
 
 class EditForm(base.EditForm):
     form_fields = form.Fields(IFeaturedVideos)

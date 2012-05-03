@@ -64,12 +64,33 @@ margin-top: 10px;
   margin-right: 25px;                                  
  }
 
+/* portlet layout */
 
-#featured dd {
+.portletFeaturedVideo {
+  height: 138px;
+  margin: 0 30%;
+}
+
+.portletFeaturedVideo featuredVideos {
+  width: 500px;
+}
+
+.portletFeaturedVideo .portletHeader {
+  width: 200px;
+  margin: 0 20%;
+}
+
+.portletFeaturedVideo .portletHeader span {
+  display: block;                                            
+  width: 200px;
+  margin: 0 20%;
+}
+
+.featuredVideos .portletItem {
   float: left;
 }
 
-#featured dd div {
+.featuredVideos .portletItem div {
   width: 100px;
   overflow: hidden;
   white-space: nowrap;

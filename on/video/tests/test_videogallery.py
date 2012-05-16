@@ -5,9 +5,12 @@
 from datetime import datetime
 
 from zope.component import queryUtility
+from Products.CMFCore.utils import getToolByName
 #from zope.component import adapts, getMultiAdapter
 
 from plone.registry.interfaces import IRegistry
+from plone.app.testing import SITE_OWNER_NAME, SITE_OWNER_PASSWORD,TEST_USER_NAME, TEST_USER_ID, TEST_USER_PASSWORD
+from plone.app.testing import login
 
 from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
 
@@ -39,10 +42,11 @@ class TestVideoGallery(unittest.TestCase):
 
     def setUp(self):
         self.portal = self.layer['portal']
-        setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        # setRoles(self.portal, TEST_USER_ID, ['Manager'])
         registry = queryUtility(IRegistry)
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
+        
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
         for i in range(1, 6):
             sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_%d.metadata' % i)
@@ -64,7 +68,7 @@ class TestVideoGallery(unittest.TestCase):
                 o.close()
 
         self.settings.fspath = unicode(self.td)
-
+        
 
     def tearDown(self):
         """remove the temp stuff"""
@@ -73,13 +77,21 @@ class TestVideoGallery(unittest.TestCase):
 
     def test_view_registration(self):
         site = self.portal
-        site.invokeFactory("Folder", id='testfolder', title='Testfolder')
-        testfolder = site['testfolder']
+        # site.invokeFactory("Folder", id='testfolder', title='Testfolder')
+        # testfolder = site['testfolder']
         app = self.layer['app']
-        browser = Browser(app)
-        browser.handleErrors = False
         import pdb; pdb.set_trace()
+        browser = self.manager_browser()
+        browser.handleErrors = False
         # the following line yields a "page not found" error
-        browser.open(testfolder.absolute_url())
+        browser.open(app.plone.absolute_url() + '/videoresources')
         self.failUnless("Video Gallery" in browser.contents)
 
+"""
+
+(Pdb) dir(self.layer)
+['__bases__', '__class__', '__contains__', '__delattr__', '__delitem__', '__dict__', '__doc__', '__format__', '__getattribute__', '__getitem__', '__hash__', '__init__', '__module__', '__name__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_mergeResourceManagers', '_resourceResolutionOrder', '_resources', 'baseResolutionOrder', 'defaultBases', 'get', 'setUp', 'setUpEnvironment', 'tearDown', 'tearDownEnvironment', 'testSetUp', 'testTearDown']
+(Pdb) self.layer.__dict__
+{'baseResolutionOrder': (<Layer 'on.video.testing.OnVideoFixture:Functional'>, <Layer 'on.video.testing.OnVideoFixture'>, <Layer 'plone.app.testing.layers.PloneFixture'>, <Layer 'plone.testing.z2.Startup'>, <Layer 'plone.testing.zca.LayerCleanup'>), '__name__': 'OnVideoFixture:Functional', '__module__': 'on.video.testing', '__bases__': (<Layer 'on.video.testing.OnVideoFixture'>,), '_resources': {'portal': [[<PloneSite at /plone>, <Layer 'on.video.testing.OnVideoFixture:Functional'>]], 'app': [[<Application at >, <Layer 'on.video.testing.OnVideoFixture:Functional'>]], 'request': [[<HTTPRequest, URL=http://nohost>, <Layer 'on.video.testing.OnVideoFixture:Functional'>]]}}
+
+"""

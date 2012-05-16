@@ -15,9 +15,10 @@ from plone.app.testing import FunctionalTesting
 
 import Products.CMFPlone
 
-#from plone.app.testing import TEST_USER_ID
-#from plone.app.testing import TEST_USER_NAME
-#from plone.app.testing import TEST_USER_PASSWORD
+from plone.app.testing import TEST_USER_ID
+from plone.app.testing import TEST_USER_NAME
+from plone.app.testing import TEST_USER_PASSWORD
+from plone.app.testing import SITE_OWNER_NAME, SITE_OWNER_PASSWORD
 
 #from plone.app.testing import setRoles
 
@@ -47,6 +48,11 @@ class OnVideoFixture(PloneSandboxLayer):
         """Uninstall the product and destroy the Zope site"""
         z2.uninstallProduct(app, 'on.video')
 
+    def manager_browser(self):
+        """Browser of Manager - not accessible from test layer
+        """
+        return self._auth_browser(SITE_OWNER_NAME, SITE_OWNER_PASSWORD)
+    
 
 ON_VIDEO_FIXTURE = OnVideoFixture()
 ON_VIDEO_INTEGRATION_TESTING = IntegrationTesting(bases=(ON_VIDEO_FIXTURE,), name="OnVideoFixture:Integration")

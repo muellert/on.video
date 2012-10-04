@@ -5,7 +5,6 @@
 from datetime import datetime
 
 from zope.component import queryUtility
-#from zope.component import adapts, getMultiAdapter
 
 from plone.registry.interfaces import IRegistry
 
@@ -26,15 +25,7 @@ from plone.app.testing import TEST_USER_ID
 from plone.app.testing import setRoles
 
 from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
-
-### swapping out this browser after reading more of the
-### optilux.cinemacontent tests
-
-# from Testing.testbrowser import Browser
-
 from plone.testing.z2 import Browser
-
-#from zope.publisher.browser import TestRequest
 
 class TestOnVideoHandling(unittest.TestCase):
     """Test the code for handling video objects, views etc."""
@@ -51,14 +42,6 @@ class TestOnVideoHandling(unittest.TestCase):
         for i in range(1, 6):
             sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_%d.metadata' % i)
             shutil.copy(sampledata, self.td)
-        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_2.metadata')
-        #shutil.copy(sampledata, self.td)
-        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
-        #shutil.copy(sampledata, self.td)
-        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_4.metadata')
-        #shutil.copy(sampledata, self.td)
-        #sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_5.metadata')
-        #shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
         shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
@@ -79,15 +62,12 @@ class TestOnVideoHandling(unittest.TestCase):
 
     def tearDown(self):
         """remove the temp stuff"""
-        #print "Please remove the test dir, ", self.td
         shutil.rmtree(self.td)
 
     def test_create_video_object(self):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
-        #registry = queryUtility(IRegistry)
-        #settings = registry.forInterface(IVideoConfiguration)
         v = self.portal.invokeFactory('on.video.Video', 'video1', title=u"My Sample Video")
         self.failUnless(v in self.portal)
 
@@ -103,7 +83,6 @@ class TestOnVideoHandling(unittest.TestCase):
                                       filename = 'sample_video_1',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        # Commit so that the test browser knows about this (see optilux.cinemacontent):
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -111,14 +90,10 @@ class TestOnVideoHandling(unittest.TestCase):
         video = self.portal[v]
         view = video.restrictedTraverse('@@view')
         downloads = view.videofiles()
-        #print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
-        #print "playlist: ", playlist
-        #import pdb; pdb.set_trace()
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
         browser.open(video.absolute_url())
-        #print "result: ", browser.contents
         self.failUnless('nothumbnail' in browser.contents)
 
     def test_read_video2_metadata(self):
@@ -132,14 +107,12 @@ class TestOnVideoHandling(unittest.TestCase):
                                       filename = 'sample_video_2',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        # Commit so that the test browser knows about this (see optilux.cinemacontent):
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
-        #print "result: ", browser.contents
         self.failUnless('nothumbnail' in browser.contents)
 
     def test_read_video_no_metadata(self):
@@ -154,14 +127,12 @@ class TestOnVideoHandling(unittest.TestCase):
                                       filename = 'no-metadata',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        # Commit so that the test browser knows about this (see optilux.cinemacontent):
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
-        #print "result: ", browser.contents
         self.failUnless('nometafile' in browser.contents)
 
     def test_read_video_metadata_no_video(self):
@@ -177,14 +148,12 @@ class TestOnVideoHandling(unittest.TestCase):
                                       filename = 'sample_video_4',
                                       place = 'nirvana',
                                       body = '<strong>some interesting story</strong>')
-        # Commit so that the test browser knows about this (see optilux.cinemacontent):
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
-        #print "result: ", browser.contents
         self.failUnless('novideo' in browser.contents)
 
     def test_read_video_with_thumbnail(self):
@@ -199,14 +168,9 @@ class TestOnVideoHandling(unittest.TestCase):
                                       body = '<strong>some interesting story</strong>')
         video = self.portal[v]
         import transaction; transaction.commit()
-        #print "video: ", video
         view = video.restrictedTraverse('@@view')
-        #print "view: ", view, ", dir: ", dir(view)
         downloads = view.videofiles()
-        #print "downloads: ", [ r.url for r in downloads ]
         playlist = view.playerchoices()
-        #print "playlist: ", playlist
-        #print "playingtime: ", view.playing_time
         self.failUnless(view.playing_time == '20:30:50')
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
@@ -265,7 +229,6 @@ class TestOnVideoHandling(unittest.TestCase):
                                       body = '<strong>some interesting story</strong>')
         video = self.portal[v]
         import transaction; transaction.commit()
-        #import pdb; pdb.set_trace()
         view = video.restrictedTraverse('@@view')
         self.failUnless(view.x == DEFAULT_WIDTH)
         self.failUnless(view.y == DEFAULT_HEIGHT)
@@ -313,16 +276,3 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(v.displayformat == 'OGV')
         self.failUnless(v.filetype == 'video/ogg')
 
-    def test_videofolders(self):
-        self.failUnless('videoresources' in self.portal.objectIds())
-        folder = getattr(self.portal, 'videoresources')
-        self.assertEqual(folder.portal_type, 'Folder')
-        #self.assertEqual(folder._ordering, 'unordered')
-        self.assertEqual(folder.getRawLocallyAllowedTypes(), ('on.video.Video', 'Folder'))
-        self.assertEqual(folder.getRawImmediatelyAddableTypes(), ('on.video.Video', 'Folder'))
-        self.assertEqual(folder.checkCreationFlag(), False)
-        self.failUnless('featured_videos' in folder.keys())
-
-
-
-# see http://pastie.org/3006184 for a usage problem

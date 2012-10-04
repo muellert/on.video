@@ -5,6 +5,7 @@
 # license: GPLv3
 
 
+import logging
 from five import grok
 from zope import schema
 from zope.interface import Interface
@@ -13,7 +14,6 @@ from urlparse import urljoin
 from plone.directives import form
 from Products.CMFCore.utils import getToolByName
 
-#, dexterity
 from plone.memoize.instance import memoize
 from plone.app.textfield import RichText
 
@@ -22,7 +22,7 @@ from plone.app.layout.viewlets.interfaces import IBelowContent
 from plone.app.layout.viewlets.interfaces import IBelowContentBody
 
 from Products.Archetypes.interfaces.base import IBaseContent
-#from plone.namedfile.field import NamedImage
+
 
 from on.video import _
 
@@ -198,7 +198,8 @@ def fixupConfig():
     if settings.urlbase[-1] != '/':
         settings.urlbase = settings.urlbase + '/'
     if not (os.path.exists(settings.fspath) and os.path.isdir(settings.fspath)):
-        print "The configured path '%s' is not a directory, setting it to /tmp" % settings.fspath
+        logger = logging.getLogger('on.video')
+        logging.warn("The configured path '%s' is not a directory, setting it to /tmp" % settings.fspath)
         settings.fspath = '/tmp'        # fake it...
     return settings
 
@@ -215,7 +216,7 @@ def getMetaDataFileHandle(view, context):
     view.urlprefix = ""
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
-    # print "urlprefix: ", view.urlprefix
+    #print "urlprefix: ", view.urlprefix
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(view, context)
@@ -269,7 +270,7 @@ def readVideoMetaData(view, context):
     # MP4 videos available).
     view.directplay = None
     directplay = None
-    # print "readVideoMetaData(), urlprefix = ", view.urlprefix
+    #print "readVideoMetaData(), urlprefix = ", view.urlprefix
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
@@ -288,18 +289,13 @@ def readVideoMetaData(view, context):
         x, y = map(int, dimensions[1].strip().split('x', 1))
         # make sure the video doesn't get too small or too big:
         if x < 100 or x > MAX_WIDTH:
-            print "need to adjust the default size (x)"
+            #print "need to adjust the default size (x)"
             x = DEFAULT_WIDTH
         if y < MIN_HEIGHT or y > MAX_HEIGHT:
-            print "need to adjust the default size (y)"
+            #print "need to adjust the default size (y)"
             y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
         view.x = x
         view.y = y
-    else:
-        #print "going with the default video size"
-        #lines.insert(0, line)
-        print "video dimensions: ", view.x, view.y
-
     videos = {}
 
     for row in lines:
@@ -353,6 +349,7 @@ class ViewThumbnail(grok.View):
 class View(grok.View):
     grok.context(IVideo)
     grok.require('zope2.View')
+    grok.name('view')
 
     """Basic Video View"""
 

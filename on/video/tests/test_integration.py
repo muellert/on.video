@@ -78,9 +78,3 @@ class TestOnVideoConfig(unittest.TestCase):
         self.failUnless('fspath' in IVideoConfiguration)
         self.assertEquals(fspath.value, config.ON_VIDEO_FS_PATH)
 
-    def test_video_typing(self):
-        """Classify video filenames into file types."""
-        from on.video.video import vVideo
-        v = vVideo('http://localhost/videomp4', '1x1 OGV')
-        print "*** v: ", v
-

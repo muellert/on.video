@@ -91,6 +91,9 @@ def genSmallView(item, request = None):
         result['thumb'] = vtn.thumbnail()
         result['title'] = vtn.title()
     # print "genSmallView(): result= ", result
+    else:
+        # attempt at #398
+        return                          # or: result = None
     return result
 
 

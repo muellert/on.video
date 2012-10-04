@@ -4,12 +4,18 @@
 
 from datetime import datetime
 
+#from zope.testbrowser.browser import Browser
+from plone.testing.z2 import Browser
+#from zope.publisher.browser import TestRequest
+
 from zope.component import queryUtility
 from Products.CMFCore.utils import getToolByName
-#from zope.component import adapts, getMultiAdapter
+
+import transaction
 
 from plone.registry.interfaces import IRegistry
-from plone.app.testing import SITE_OWNER_NAME, SITE_OWNER_PASSWORD,TEST_USER_NAME, TEST_USER_ID, TEST_USER_PASSWORD
+from plone.app.testing import SITE_OWNER_NAME
+from plone.app.testing import SITE_OWNER_PASSWORD
 from plone.app.testing import login
 
 from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
@@ -23,17 +29,14 @@ import shutil
 import unittest2 as unittest
 
 from plone.app.testing import TEST_USER_ID
-#from plone.app.testing import TEST_USER_NAME
-#from plone.app.testing import TEST_USER_PASSWORD
+from plone.app.testing import TEST_USER_NAME
+from plone.app.testing import TEST_USER_PASSWORD
 
 from plone.app.testing import setRoles
 
 from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
-from on.video.setuphandlers import createFolder
 
-from plone.testing.z2 import Browser
 
-#from zope.publisher.browser import TestRequest
 
 class TestVideoGallery(unittest.TestCase):
     """Test the code for handling video objects, views etc."""
@@ -42,7 +45,9 @@ class TestVideoGallery(unittest.TestCase):
 
     def setUp(self):
         self.portal = self.layer['portal']
-        # setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        self.portal.invokeFactory("Folder", id='testfolder', title='Testfolder')
+        transaction.commit()
         registry = queryUtility(IRegistry)
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
@@ -66,32 +71,45 @@ class TestVideoGallery(unittest.TestCase):
                 o = open(os.path.join(d, video), "wb")
                 o.write("1")
                 o.close()
-
         self.settings.fspath = unicode(self.td)
-        
+
 
     def tearDown(self):
         """remove the temp stuff"""
-        #print "Please remove the test dir, ", self.td
+        # delete our private content, too
         shutil.rmtree(self.td)
 
+
     def test_view_registration(self):
-        site = self.portal
-        # site.invokeFactory("Folder", id='testfolder', title='Testfolder')
-        # testfolder = site['testfolder']
+        """Test the availability of the gallery view."""
         app = self.layer['app']
-        import pdb; pdb.set_trace()
-        browser = self.manager_browser()
+        browser = Browser(app)
+        portal = self.layer['portal']
+        portalURL = portal.absolute_url()
         browser.handleErrors = False
-        # the following line yields a "page not found" error
-        browser.open(app.plone.absolute_url() + '/videoresources')
+        browser.open(portalURL + '/login_form')
+        browser.getControl(name='__ac_name').value = TEST_USER_NAME
+        browser.getControl(name='__ac_password').value = TEST_USER_PASSWORD
+        browser.getControl(name='submit').click()
+        self.failUnless("Log out" in browser.contents)
+        browser.open(portalURL + '/testfolder')
         self.failUnless("Video Gallery" in browser.contents)
 
-"""
 
-(Pdb) dir(self.layer)
-['__bases__', '__class__', '__contains__', '__delattr__', '__delitem__', '__dict__', '__doc__', '__format__', '__getattribute__', '__getitem__', '__hash__', '__init__', '__module__', '__name__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__setitem__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_mergeResourceManagers', '_resourceResolutionOrder', '_resources', 'baseResolutionOrder', 'defaultBases', 'get', 'setUp', 'setUpEnvironment', 'tearDown', 'tearDownEnvironment', 'testSetUp', 'testTearDown']
-(Pdb) self.layer.__dict__
-{'baseResolutionOrder': (<Layer 'on.video.testing.OnVideoFixture:Functional'>, <Layer 'on.video.testing.OnVideoFixture'>, <Layer 'plone.app.testing.layers.PloneFixture'>, <Layer 'plone.testing.z2.Startup'>, <Layer 'plone.testing.zca.LayerCleanup'>), '__name__': 'OnVideoFixture:Functional', '__module__': 'on.video.testing', '__bases__': (<Layer 'on.video.testing.OnVideoFixture'>,), '_resources': {'portal': [[<PloneSite at /plone>, <Layer 'on.video.testing.OnVideoFixture:Functional'>]], 'app': [[<Application at >, <Layer 'on.video.testing.OnVideoFixture:Functional'>]], 'request': [[<HTTPRequest, URL=http://nohost>, <Layer 'on.video.testing.OnVideoFixture:Functional'>]]}}
-
-"""
+    def test_gallery_item_filter(self):
+        """Test that only videos and folders are being included in the
+           listing.
+        """
+        folder = self.layer['portal']['testfolder']
+        for i in range(1,5):
+            folder.invokeFactory('on.video.Video', id='test%d' % i)
+        folder.invokeFactory('Document', id='some_document')
+        folder.setLayout('on-video-gallery')
+        app = self.layer['app']
+        portal = self.layer['portal']
+        portalURL = portal.absolute_url()
+        browser = Browser(app)
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            SITE_OWNER_NAME, SITE_OWNER_PASSWORD, ))
+        browser.open(portalURL + '/testfolder')
+        self.failIf('some_document' in browser.contents)

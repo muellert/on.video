@@ -29,27 +29,6 @@ div.videodesc {
    margin: 0 auto;
 }
 
-.listingBar {
-  width: 670px;
-  border-top: 2px solid #5f71b5;
-  border-bottom: 2px solid #5f71b5;
-  padding: 5px 10px;
-  margin: 10px 0px;              
-}
-
-.listingBar .next {
-  float: left;
-}
-
-.listingBar .previous {
-  float: left;
-}
-
-.listingBar span {
-  display: block;
-  float: left;
-}
-
 .video-download-block {
 margin-top: 10px;
                         }

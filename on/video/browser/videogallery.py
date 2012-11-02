@@ -52,6 +52,7 @@ class FolderItems(object):
         self.filetype = self.calculateFileType(url)
         self.start = start
 
+
 def countFolderItems(folder):
     """Filter the given list of folder contents for those elements
        that are intended to be shown in the video gallery, and
@@ -91,9 +92,13 @@ def genSmallView(item, request = None):
         result['thumb'] = vtn.thumbnail()
         result['title'] = vtn.title()
     # print "genSmallView(): result= ", result
+    elif item.portal_type == 'Image':
+        result['sub_folder'] = None
+        result['sub_videos'] = None
+        result['thumb'] = '%s/image' % item.id
+        result['title'] = item.title[0:20]
     else:
-        # attempt at #398
-        return                          # or: result = None
+        raise ValueError, "item %s is an object of an illegal type." % str(item)
     return result
 
 
@@ -103,28 +108,32 @@ class VideoGallery(grok.View):
     grok.context(IATFolder)
     grok.require('zope2.View')
 
-    @memoize
+    #@memoize
     def getFolderContents(self):
         """Filter the folder contents for those elements that are
            intended to be shown in the video gallery.
         """
-        return [ item for item in self.context.folderlistingFolderContents() if
-                      item.portal_type in ('Folder', 'on.video.Video', 'Image') ]
+        contents = [ item for item in self.context.folderlistingFolderContents() if \
+                        item.portal_type in ('Folder', 'on.video.Video', 'Image')
+                     and item is not None]
+        print "VideoGallery(%s) getFolderContens: contents = %s" % (str(self), str(contents))
+        return contents
 
-    @memoize
+    #@memoize
     def update(self):
         """Called before rendering the template for this view.
         """
         fl = self.getFolderContents()
-        b_start = int(self.context.REQUEST.get('b_start', 0))
-        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
-    
-        # print "VideoGallery.update(): contents = ", self.contents
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
-    @memoize
-    def xxxvideoListing(self):
-        """Get all child videos and video folders in this folder.
-        """
-        folder = self.context
-        items = folder.keys()
+        b_start = int(self.context.REQUEST.get('b_start', 0))
+        print "VideoGallery() update: b_start = %d, fl = %s" % (b_start, str(fl))
+        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
+        # print "VideoGallery.update(): contents = ", self.contents
+
+    #@memoize
+    #def xxxvideoListing(self):
+    #    """Get all child videos and video folders in this folder.
+    #    """
+    #    folder = self.context
+    #    items = folder.keys()

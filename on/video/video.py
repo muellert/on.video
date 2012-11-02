@@ -200,19 +200,20 @@ def fixupConfig():
     if not (os.path.exists(settings.fspath) and os.path.isdir(settings.fspath)):
         logger = logging.getLogger('on.video')
         logging.warn("The configured path '%s' is not a directory, setting it to /tmp" % settings.fspath)
-        settings.fspath = '/tmp'        # fake it...
+        settings.fspath = u'/tmp'        # fake it...
     return settings
 
 def getMetaDataFileHandle(view, context):
     """Find the metadata file and open it, fixing up the registry
        along the way.
     """
-    #print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
+    print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
     settings = fixupConfig()
     view.player = settings.urlbase + config.PLAYER
     bpath = os.path.join(settings.fspath, context.filename)
     meta_path = bpath + ".metadata"
-    #print "metadata: ", meta_path
+    print "getMetaDataFileHandle() meta_path = %s" % meta_path
+    print "metadata: ", meta_path
     view.urlprefix = ""
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
@@ -330,9 +331,10 @@ class ViewThumbnail(grok.View):
 
     def __init__(self, context, request):
         super(ViewThumbnail, self).__init__(context, request)
+        self.id = context.id
         readVideoMetaData(self, context)
 
-    @memoize
+    #@memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
         if self.thumbnailurl is not None:
@@ -340,7 +342,7 @@ class ViewThumbnail(grok.View):
         else:
             return '/++resource++on.video/nothumbnail.png'
 
-    @memoize
+    #@memoize
     def title(self):
         """Return a part of the title, suitable for a gallery view."""
         return self.context.title[:20]

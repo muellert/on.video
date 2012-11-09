@@ -12,21 +12,6 @@
 
   <include package="plone.app.portlets"/>
 
-  <browser:menuItem
-      for="Products.ATContentTypes.interface.IATFolder"
-      menu="plone_displayviews"
-      title="Video Gallery"
-      action="@@videogallery"
-      description="List folder contents as a video gallery"
-      />
-
-  <browser:page
-      name="on-video-gallery"
-      for="Products.ATContentTypes.interface.IATFolder"
-      class=".videogallery.VideoGallery"
-      permission="zope2.View"
-      />
-
   <plone:portlet
       name="irill.FeaturedVideos"
       interface=".featuredportlet.IFeaturedVideos"

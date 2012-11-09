@@ -33,8 +33,6 @@ on uninstallation of the product?
 from zope.interface import Interface
 from five import grok
 
-from Products.ATContentTypes.interface import IATFolder
-
 from Products.CMFPlone.PloneBatch import Batch
 from plone.memoize.instance import memoize
 
@@ -100,7 +98,7 @@ def genSmallView(item, request = None):
 class VideoGallery(grok.View):
     """Default view, gallery style, for a video folder.
     """
-    grok.context(IATFolder)
+    grok.context(Interface)
     grok.require('zope2.View')
 
     @memoize

@@ -1,4 +1,5 @@
 <object name="portal_types">
  <object name="on.video.Video" meta_type="Dexterity FTI" />
  <object name="Products.ATContentTypes.interface.IATFolder" meta_type="Factory-based Type Information with dynamic views" />
+ <object name="Products.ATContentTypes.content.documant.ATDocument" meta_type="Factory-based Type Information with dynamic views" />
 </object>

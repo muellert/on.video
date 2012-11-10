@@ -65,6 +65,15 @@ def countFolderItems(folder):
         counts[item.portal_type] += 1
     return (counts['Folder'], counts['on.video.Video'])
 
+def shorttitle(title):
+    """shorten titles for gallery view"""
+    if len(title) > 20:
+        tshort = title[:17] + " ..."
+    else: tshort = title
+    tdict = {'short': tshort, 'long': title}
+    print "TITLES: " + str(tdict)
+    return tdict
+
 
 def genSmallView(item, request = None):
     """Turn a content item into a dictionary. We only need specific
@@ -79,8 +88,10 @@ def genSmallView(item, request = None):
         # assumption: the image is an ArcheTypes image
         if 'bannerimage' in item.keys():
             result['thumb'] = '%s/bannerimage/image' % item.id
-        # print "genSmallView(): item= ", item
-        result['title'] = item.title[0:20]
+        titles = shorttitle(item.title)
+        result['title'] = titles['short']
+        result['longtitle'] = titles['long']
+        print "RESULT DICT:" + str(result)
     elif item.portal_type == 'on.video.Video':
         result['sub_folder'] = None
         result['sub_videos'] = None

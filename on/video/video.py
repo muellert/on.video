@@ -345,11 +345,7 @@ class ViewThumbnail(grok.View):
     #@memoize
     def title(self):
         """Return a part of the title, suitable for a gallery view."""
-        title = self.context.title
-        if len(title) > 20:
-            tshort = title[:17] + " ..."
-        else: tshort = title
-        return tshort
+        return self.context.title[:20]
 
 
 class View(grok.View):

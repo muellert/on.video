@@ -28,9 +28,9 @@
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
   
 		  <div tal:repeat="item batch">
-		    <div tal:define="odd repeat/item/odd"
+		    <div tal:define="odd repeat/item/odd; ltitle item/longtitle"
 		         tal:attributes="class python:odd and 'even' or 'odd'">
-		      <a href="#" tal:attributes="href item/id" class="videothumb">
+		      <a href="#" titles="#" tal:attributes="href item/id; title ltitle;" class="videothumb">
 		        <h4 tal:content="item/title" />
 		        <img src="#" tal:attributes="src nocall: item/thumb|item/banner" />
 		       </a>

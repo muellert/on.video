@@ -114,7 +114,7 @@ class VideoGallery(grok.View):
         contents = [ item for item in self.context.folderlistingFolderContents() if \
                         item.portal_type in ('Folder', 'on.video.Video', 'Image')
                      and item is not None]
-        print "VideoGallery(%s) getFolderContens: contents = %s" % (str(self), str(contents))
+        # print "VideoGallery(%s) getFolderContens: contents = %s" % (str(self), str(contents))
         return contents
 
     #@memoize
@@ -125,13 +125,5 @@ class VideoGallery(grok.View):
         #import pdb; pdb.set_trace()
 
         b_start = int(self.context.REQUEST.get('b_start', 0))
-        print "VideoGallery() update: b_start = %d, fl = %s" % (b_start, str(fl))
+        #print "VideoGallery() update: b_start = %d, fl = %s" % (b_start, str(fl))
         self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
-        # print "VideoGallery.update(): contents = ", self.contents
-
-    #@memoize
-    #def xxxvideoListing(self):
-    #    """Get all child videos and video folders in this folder.
-    #    """
-    #    folder = self.context
-    #    items = folder.keys()

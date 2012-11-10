@@ -207,13 +207,13 @@ def getMetaDataFileHandle(view, context):
     """Find the metadata file and open it, fixing up the registry
        along the way.
     """
-    print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
+    # print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
     settings = fixupConfig()
     view.player = settings.urlbase + config.PLAYER
     bpath = os.path.join(settings.fspath, context.filename)
     meta_path = bpath + ".metadata"
-    print "getMetaDataFileHandle() meta_path = %s" % meta_path
-    print "metadata: ", meta_path
+    # print "getMetaDataFileHandle() meta_path = %s" % meta_path
+    # print "metadata: ", meta_path
     view.urlprefix = ""
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
@@ -345,7 +345,11 @@ class ViewThumbnail(grok.View):
     #@memoize
     def title(self):
         """Return a part of the title, suitable for a gallery view."""
-        return self.context.title[:20]
+        title = self.context.title
+        if len(title) > 20:
+            tshort = title[:17] + " ..."
+        else: tshort = title
+        return tshort
 
 
 class View(grok.View):
@@ -367,7 +371,6 @@ class View(grok.View):
     @memoize
     def playerchoices(self):
         """Return a list of video urls for the player"""
-        #print "=== View.playerchoices(): videos for player: ", [ r.url for r in self.playfiles ]
         #print "=== View.playerchoices(): videos for player, types: ", [ r.filetype for r in self.playfiles ]
         return self.playfiles
 

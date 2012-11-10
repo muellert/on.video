@@ -71,9 +71,7 @@ def shorttitle(title):
         tshort = title[:17] + " ..."
     else: tshort = title
     tdict = {'short': tshort, 'long': title}
-    print "TITLES: " + str(tdict)
     return tdict
-
 
 def genSmallView(item, request = None):
     """Turn a content item into a dictionary. We only need specific
@@ -91,7 +89,7 @@ def genSmallView(item, request = None):
         titles = shorttitle(item.title)
         result['title'] = titles['short']
         result['longtitle'] = titles['long']
-        print "RESULT DICT:" + str(result)
+
     elif item.portal_type == 'on.video.Video':
         result['sub_folder'] = None
         result['sub_videos'] = None
@@ -99,13 +97,17 @@ def genSmallView(item, request = None):
         vtn = ViewThumbnail(item, request)
         result['playingtime'] = vtn.playing_time
         result['thumb'] = vtn.thumbnail()
-        result['title'] = vtn.title()
+        titles = shorttitle(item.title)
+        result['title'] = titles['short']
+        result['longtitle'] = titles['long']
     # print "genSmallView(): result= ", result
     elif item.portal_type == 'Image':
         result['sub_folder'] = None
         result['sub_videos'] = None
         result['thumb'] = '%s/image' % item.id
-        result['title'] = item.title[0:20]
+        titles = shorttitle(item.title)
+        result['title'] = titles['short']
+        result['longtitle'] = titles['long']
     else:
         raise ValueError, "item %s is an object of an illegal type." % str(item)
     return result

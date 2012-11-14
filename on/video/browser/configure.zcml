@@ -21,4 +21,14 @@
       editview=".featuredportlet.EditForm"
       />
 
+
+  <browser:menuItem
+      for="Products.ATContentTypes.interface.IATFolder"
+      menu="plone_displayviews"
+      title="Video Gallery"
+      action="@@videogallery"
+      description="List folder contents as a video gallery"
+      />
+
+
 </configure>

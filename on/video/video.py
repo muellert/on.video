@@ -186,10 +186,15 @@ import config
 
 
 def setDefaultNoVideoValues(view, context):
+    from config import DEFAULT_WIDTH
+    from config import DEFAULT_HEIGHT
     view.thumbnailurl = '/++resource++on.video/novideo.png'
     view.playing_time = '00:00:00'
     view.videos = []
     view.playfiles = []
+    view.x = DEFAULT_WIDTH
+    view.y = DEFAULT_HEIGHT
+
 
 def fixupConfig():
     """Fix up the configuration, if required."""

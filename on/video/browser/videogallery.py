@@ -68,7 +68,7 @@ def countFolderItems(folder):
 def shorttitle(title):
     """shorten titles for gallery view"""
     if len(title) > 20:
-        tshort = title[:17] + " ..."
+        tshort = title[:17] + "..."
     else: tshort = title
     tdict = {'short': tshort, 'long': title}
     return tdict

@@ -24,9 +24,8 @@
  <property name="behaviors">
      <element value="plone.app.content.interfaces.INameFromTitle" />
      <element value="plone.app.dexterity.behaviors.metadata.ICategorization"/>
-     <element
-	 value="plone.app.dexterity.behaviors.exclfromnav.IExcludeFromNavigation"/>
-
+     <element value="plone.app.dexterity.behaviors.metadata.IPublication"/>
+     <element value="plone.app.dexterity.behaviors.exclfromnav.IExcludeFromNavigation"/>
      <!-- element value="collective.flowplayer.behaviors.IFlowplayerFile"/ -->
      <element value="plone.app.dexterity.behaviors.metadata.IOwnership"/>
      <element

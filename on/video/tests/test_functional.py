@@ -234,8 +234,8 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(view.y == DEFAULT_HEIGHT)
 
     def test_read_video_custom_dimensions_handling(self):
-        """See whether the dimensions are set correctly if the metadata file
-           does not include the "default size" entry.
+        """See whether the dimensions are set correctly if the metadata
+	   file does include the "default size" entry.
         """
         from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
         v = self.portal.invokeFactory('on.video.Video', 'video7', title=u"My Sample Video",
@@ -252,8 +252,9 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(view.y == 535)
 
     def test_read_video_weird_dimensions_handling(self):
-        """See whether the dimensions are set correctly if the metadata file
-           does not include the "default size" entry.
+        """See whether the dimensions are set correctly if the metadata
+	   file does include the "default size" entry, but values are
+	   out of bound.
         """
         from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
         v = self.portal.invokeFactory('on.video.Video', 'video8', title=u"My Sample Video",

@@ -189,11 +189,14 @@ def setDefaultNoVideoValues(view, context):
     from config import DEFAULT_WIDTH
     from config import DEFAULT_HEIGHT
     view.thumbnailurl = '/++resource++on.video/novideo.png'
-    view.playing_time = '00:00:00'
+    view.playing_time = 'unknown' # '00:00:00'
     view.videos = []
     view.playfiles = []
-    view.x = DEFAULT_WIDTH
-    view.y = DEFAULT_HEIGHT
+    # special case: metafile is present, but not the actual video
+    if not hasattr(view, "x"):
+	view.x = DEFAULT_WIDTH
+    if not hasattr(view, "y"):
+	view.y = DEFAULT_HEIGHT
 
 
 def fixupConfig():
@@ -276,7 +279,7 @@ def readVideoMetaData(view, context):
     # MP4 videos available).
     view.directplay = None
     directplay = None
-    #print "readVideoMetaData(), urlprefix = ", view.urlprefix
+    #print "*** readVideoMetaData(), urlprefix = ", view.urlprefix
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
@@ -291,8 +294,9 @@ def readVideoMetaData(view, context):
     if 'default size' in lines[0]:          # skip if we don't have it, but don't eat the line
         line = lines.pop(0)
         dimensions = line.split(':', 1)
-        #print "*** reading the specified default size"
+        #print "*** reading the specified default size: ", dimensions
         x, y = map(int, dimensions[1].strip().split('x', 1))
+        #print "\t\tx = %d, y = %d" % (x, y)
         # make sure the video doesn't get too small or too big:
         if x < 100 or x > MAX_WIDTH:
             #print "need to adjust the default size (x)"
@@ -300,6 +304,7 @@ def readVideoMetaData(view, context):
         if y < MIN_HEIGHT or y > MAX_HEIGHT:
             #print "need to adjust the default size (y)"
             y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
+        #print "\tafter sanitizing values: x = %d, y = %d" % (x, y)
         view.x = x
         view.y = y
     videos = {}
@@ -317,6 +322,7 @@ def readVideoMetaData(view, context):
             videos[k] = vVideo(v_url, k)
             #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
     vlist = videos.values()
+    #print "\tvideo dimensions before handling files: x = %d, y = %d" % (view.x, view.y)
     view.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
     #view.directplay = view.playfiles[0]
@@ -325,6 +331,7 @@ def readVideoMetaData(view, context):
     # deep copy!!!
     downloadlist = view.playfiles[:]
     view.videos = sortVideosForDownload(downloadlist)
+    #print "*** readVideoMetaData() done, video dimensions: x = %d, y = %d" % (view.x, view.y)
 
 
 class ViewThumbnail(grok.View):
@@ -339,7 +346,7 @@ class ViewThumbnail(grok.View):
         self.id = context.id
         readVideoMetaData(self, context)
 
-    #@memoize
+    @memoize
     def thumbnail(self):
         """Calculate the URL to the thumbnail"""
         if self.thumbnailurl is not None:
@@ -347,7 +354,7 @@ class ViewThumbnail(grok.View):
         else:
             return '/++resource++on.video/nothumbnail.png'
 
-    #@memoize
+    @memoize
     def title(self):
         """Return a part of the title, suitable for a gallery view."""
         return self.context.title[:20]

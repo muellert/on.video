@@ -46,7 +46,7 @@
 	    "<span class="video-title" tal:content="context/title">Caption</span>"
 	      <br />by
 	    <span class="onvideo-director" tal:content="context/director">director</span> on
-	      <span class="onvideo-recorded" tal:content="context/recorded">2011-01-01</span>,
+	      <span class="onvideo-recorded" tal:content="python:context.recorded.strftime('%Y-%m-%d %H:%M')">2011-01-01</span>,
 		recorded at
 	      <span class="onvideo-place" tal:content="context/place">place</span>
         </div>

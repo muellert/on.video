@@ -31,7 +31,7 @@
       />
 
 
-  <browser:page
+  <!--browser:page
       name="videogallery"
       for="Products.ATContentTypes.interface.IATFolder"
       class=".videogallery.VideoGallery"
@@ -44,7 +44,7 @@
       for="plone.app.collection.interfaces.ICollection"
       class=".videogallery.VideoGallery"
       permission="zope2.View"
-      />
+      /-->
 
 
 

@@ -34,8 +34,9 @@ from zope.interface import Interface
 from five import grok
 
 from Products.CMFPlone.PloneBatch import Batch
+from Products.CMFCore.utils import getToolByName
 from plone.memoize.instance import memoize
-
+from plone.app.contentlisting import catalog
 from on.video import _
 
 from on.video.video import ViewThumbnail
@@ -79,6 +80,12 @@ def genSmallView(item, request = None):
     """
     result = dict(portaltype=item.portal_type, id=item.id, title=item.title)
     result['banner'] = '/++resource++on.video/nothumbnail.png'
+    # import pdb; pdb.set_trace()
+    try: # Are we are in a collection? 
+        result['path'] =item.getPath()
+    except: # Or in a Folder?
+        result['path'] =item.absolute_url()
+    
     if item.portal_type == 'Folder':
         (folders, videos) = countFolderItems(item)
         result['sub_folder'] = folders
@@ -110,6 +117,7 @@ def genSmallView(item, request = None):
         result['longtitle'] = titles['long']
     else:
         raise ValueError, "item %s is an object of an illegal type." % str(item)
+    # print result
     return result
 
 
@@ -124,10 +132,19 @@ class VideoGallery(grok.View):
         """Filter the folder contents for those elements that are
            intended to be shown in the video gallery.
         """
-        contents = [ item for item in self.context.folderlistingFolderContents() if \
-                        item.portal_type in ('Folder', 'on.video.Video', 'Image')
-                     and item is not None]
-        # print "VideoGallery(%s) getFolderContens: contents = %s" % (str(self), str(contents))
+        if self.context.portal_type == 'Folder':
+            contents = [ item for item in self.context.folderlistingFolderContents() if \
+                         item.portal_type in ('Folder', 'on.video.Video', 'Image')
+                         and item is not None]
+        if self.context.portal_type == 'Collection':
+            """partly taken from plone.app.collection"""
+            catalog = getToolByName(self, 'portal_catalog')
+            results = self.context.results(batch=False)
+
+            contents = [ item for item in results if \
+                         item.portal_type in ('Folder', 'on.video.Video', 'Image')
+                         and item is not None]
+            #print "VideoGallery(%s) getFolderContens: contents = %s" % (str(self), str(contents))
         return contents
 
     #@memoize

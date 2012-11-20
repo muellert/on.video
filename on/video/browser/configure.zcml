@@ -31,21 +31,13 @@
       />
 
 
-  <!--browser:page
-      name="videogallery"
-      for="Products.ATContentTypes.interface.IATFolder"
-      class=".videogallery.VideoGallery"
-      permission="zope2.View"
-      />
-
-
-  <browser:page
-      name="videogallery"
+  <browser:menuItem
       for="plone.app.collection.interfaces.ICollection"
-      class=".videogallery.VideoGallery"
-      permission="zope2.View"
-      /-->
-
+      menu="plone_displayviews"
+      title="Video Gallery"
+      action="@@videogallery"
+      description="List query results as a video gallery"
+      />
 
 
 </configure>

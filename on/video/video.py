@@ -193,9 +193,9 @@ def setDefaultNoVideoValues(view, context):
     view.videos = []
     view.playfiles = []
     # special case: metafile is present, but not the actual video
-    if not hasattr(view, "x"):
+    if not hasattr(view, "y") or not isinstance(view.x, int):
 	view.x = DEFAULT_WIDTH
-    if not hasattr(view, "y"):
+    if not hasattr(view, "y") or not isinstance(view.y, int):
 	view.y = DEFAULT_HEIGHT
 
 
@@ -226,6 +226,7 @@ def getMetaDataFileHandle(view, context):
     if '/' in context.filename:
         view.urlprefix = context.filename[:context.filename.rfind('/')]
     #print "urlprefix: ", view.urlprefix
+    #import pdb; pdb.set_trace()
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(view, context)

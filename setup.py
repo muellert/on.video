@@ -13,6 +13,7 @@ setup(name='on.video',
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
+	"Topic :: Multimedia :: Video",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],

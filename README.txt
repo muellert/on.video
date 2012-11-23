@@ -27,3 +27,25 @@ This product adds a "Video" content type with the following features:
 
  * The product makes use of flowplayer (www.flowplayer.org).
 
+
+Each video requires a "metadata" file which adheres to the following
+structure:
+
+
+    First line:
+    Column 1: "thumbnail"
+    Column 2: filename for the thumbnail, if any
+    Second line:
+    Column 1: "playing time"
+    Column 2: time spec (HH:MM:SS)
+    Third line:
+    Column 1: "selected"
+    Column 2: file name of the video that is to be played in the browser
+    Fourth line:
+    Column 1: "default size"
+    Column 2: size specification in width x height, eg. "500x300"
+    Remaining lines:
+    Column 1: resolution and format, eg. "640x480, OGV"
+    Column 2: complete file name (without directories)
+
+

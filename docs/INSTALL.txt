@@ -1,17 +1,79 @@
 on.video Installation
----------------------
+=====================
+
+
+Using buildout
+--------------
 
 To install on.video using zc.buildout and the plone.recipe.zope2instance
 recipe to manage your project, you can do this:
 
-* Add ``on.video`` to the list of eggs to install, e.g.:
+  * Add ``on.video`` to the list of eggs to install, e.g.:
 
-    [buildout]
-    ...
-    eggs =
-        ...
-        on.video
+    |      [buildout]
+    |      ...
+    |      eggs =
+    |          ...
+    |          on.video
        
-* Re-run buildout, e.g. with:
+  * Re-run buildout, e.g. with:
 
-    $ ./bin/buildout
+    |      $ ./bin/buildout
+
+
+Runtime Configuration
+---------------------
+
+The product uses two settings for runtime configuration:
+
+ * A file system path, accessible from the Plone site, where
+   the product will be looking for the metadata files, splash
+   images, etc.
+
+ * An URL that will be used as a prefix to the actual video
+   files. This will be part of all generated URLs, and makes
+   it possible to serve the videos eg. from a different server
+   altogether, or to break out an URL prefix from your site and
+   redirect it to the file system where the video files are
+   stored.
+
+To actually work with the product, you need to also place a flowplayer
+binary in the directory that serves as the root of the tree pointed to
+by the URL setting of the product (you can use the configlet, or
+access the registry to change these).
+
+The (file) name of the player is set in the PLAYER variable in
+``config.py``.
+
+
+End User Perspective
+--------------------
+
+The end user adds videos much like any other content type, but instead
+of uploading large blobs to the ZODB, he specifies the base path of
+the metadata file.
+
+Example:
+
+The file system path is set to ``/tmp``. The video metadata file is at
+``/tmp/myvideo/test.metadata``. Then, the user specifies
+``myvideo/test`` in the video file field of the edit form. For the
+contents of the metadata file(s), please see the README.
+
+
+
+Notes
+-----
+
+The video object in the ZODB will be completely independent of the
+video data that resides on the file system, and you can freely move
+the video objects around without touching the file system. For folders
+and new style collections, you can enable a video gallery view that
+displays summary information for videos and contained folders, but
+removes all other items, except for images, from the display. So if
+you have a video gallery enabled for a folder and a page within that
+folder, you will not see it.
+
+The video and metadata files are intended to be generated and
+deposited on the file system by processes outside of Zope, thus making
+the video handling inside of Zope a lean experience.

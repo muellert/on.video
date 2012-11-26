@@ -12,7 +12,7 @@ setup(name='on.video',
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
-	"Topic :: Multimedia :: Video",
+        "Topic :: Multimedia :: Video",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
@@ -33,7 +33,7 @@ setup(name='on.video',
           'plone.app.relationfield',
           'collective.autopermission',
           'plone.app.registry',
-	  'plone.namedfile[blobs]',
+          'plone.namedfile[blobs]',
           # -*- Extra requirements: -*-
       ],
       extras_require = {

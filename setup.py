@@ -7,19 +7,19 @@ version = open(version_file).read().strip()
 setup(name='on.video',
       version=version,
       description="dynamic display of video files",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=open("README.rst").read(),
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
+        "Topic :: Multimedia :: Video",
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
       keywords='plone video dexterity',
       author='Toni Mueller',
       author_email='support@oeko.net',
-      url='https://bugs.oeko.net/redmine/projects/irill-video/wiki',
+      url='https://github.com/muellert/on.video',
       license='GPLv3',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['on'],
@@ -33,8 +33,12 @@ setup(name='on.video',
           'plone.app.relationfield',
           'collective.autopermission',
           'plone.app.registry',
+<<<<<<< HEAD
 	  'plone.namedfile[blobs]',
           'gdata',
+=======
+          'plone.namedfile[blobs]',
+>>>>>>> 076f0c087179491b6bce3e16264a5a35b607bebb
           # -*- Extra requirements: -*-
       ],
       extras_require = {

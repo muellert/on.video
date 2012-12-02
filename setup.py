@@ -34,6 +34,7 @@ setup(name='on.video',
           'collective.autopermission',
           'plone.app.registry',
 	  'plone.namedfile[blobs]',
+          'gdata',
           # -*- Extra requirements: -*-
       ],
       extras_require = {

@@ -42,7 +42,6 @@ from on.video import _
 from on.video.video import ViewThumbnail
 
 
-
 class FolderItems(object):
     """Collect attributes for folder entries."""
     def __init__(self, data, datatype, start):
@@ -52,19 +51,26 @@ class FolderItems(object):
         self.start = start
 
 
-def countFolderItems(folder):
-    """Filter the given list of folder contents for those elements
-       that are intended to be shown in the video gallery, and
-       count them.
+def countFolderItems(item):
+    """item count to be shown in a folder / collection summary view
        Return a pair (folders, videos).
     """
-    folderlisting = folder.folderlistingFolderContents()
     counts = { 'Folder': 0, 'on.video.Video': 0 }
-    for item in folderlisting:
+    #import pdb; pdb.set_trace()
+
+    if item.PortalType() == 'Folder':
+        obj = item._brain.getObject()
+        flist = obj.folderlistingFolderContents()
+    if item.PortalType() == 'Collection':
+        catalog = getToolByName(self, 'portal_catalog')
+        flist = self.context.results(batch=False)
+
+    for item in flist:
         if not item.portal_type in ('Folder', 'on.video.Video'):
             continue
         counts[item.portal_type] += 1
     return (counts['Folder'], counts['on.video.Video'])
+
 
 def shorttitle(title):
     """shorten titles for gallery view"""
@@ -73,6 +79,7 @@ def shorttitle(title):
     else: tshort = title
     tdict = {'short': tshort, 'long': title}
     return tdict
+
 
 def genSmallView(item, request = None):
     """Turn a content item into a dictionary. We only need specific

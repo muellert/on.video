@@ -249,6 +249,8 @@ def getMetaDataFileHandle(view, context):
             view.playing_time = pt.group()
         else:
             view.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
+    else:
+        lines.insert(0, line)           # preserve the unused line
     return lines, settings
 
 

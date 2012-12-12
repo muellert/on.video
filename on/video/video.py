@@ -37,6 +37,7 @@ class IVideo(form.Schema):
     
     director = schema.TextLine(
         title=_(u"Author/Director"),
+        required=False,
         )
 
     recorded = schema.Datetime(
@@ -46,6 +47,7 @@ class IVideo(form.Schema):
     
     place = schema.Text(
         title=_(u"Location of recording"),
+        required=False,
         )
 
     filename = schema.TextLine(

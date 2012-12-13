@@ -213,6 +213,12 @@ def fixupConfig():
         settings.fspath = u'/tmp'        # fake it...
     return settings
 
+
+def removeJunk(lines):
+    """Remove all empty lines and comment lines from the list"""
+    return [ l for l in lines if not (l.startswith("\n") or l.startswith("#")) ]
+
+
 def getMetaDataFileHandle(view, context):
     """Find the metadata file and open it, fixing up the registry
        along the way.
@@ -238,6 +244,7 @@ def getMetaDataFileHandle(view, context):
     # thumbnail file:
     view.thumbnailurl = None
     lines = mdfile.readlines(2000)
+    lines = removeJunk(lines)
     mdfile.close()
     line = lines.pop(0)
     thumb = line.split(':', 1)

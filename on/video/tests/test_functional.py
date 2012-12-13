@@ -329,22 +329,22 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(view.playing_time == 'unknown')
 
     def test_fix_settings_url(self):
-        """See whether the 
-           is not specified.
+        """See whether the URL is properly fixed.
         """
+        from on.video.video import fixupConfig
         oldsettings = self.settings
         self.settings.urlbase = 'http://nohost'
-        v = self.portal.invokeFactory('on.video.Video', 'video8', title=u"My Sample Video",
-                                      name = 'some kind of video',
-                                      author = 'me, myself',
-                                      recorded = datetime.now(),
-                                      filename = 'sample_video_6',
-                                      place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
-        video = self.portal[v]
-        import transaction; transaction.commit()
-        view = video.restrictedTraverse('@@view')
+        fixupConfig()
         self.failUnless(self.settings.urlbase.endswith('/'))
+
+    def test_fix_settings_fspath(self):
+        """See whether the file system path is properly reset.
+        """
+        from on.video.video import fixupConfig
+        oldsettings = self.settings
+        self.settings.fspath = u'/nosuchfileordirectory'
+        fixupConfig()
+        self.failUnless(self.settings.fspath == u'/tmp')
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo

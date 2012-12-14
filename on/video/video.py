@@ -26,6 +26,8 @@ from Products.Archetypes.interfaces.base import IBaseContent
 
 from on.video import _
 
+#from metadata import setVideoMetaData
+
 
 class IVideo(form.Schema):
     """A video metadata object.
@@ -124,16 +126,6 @@ player_vtypes = ('video/mp4', 'video/ogg', 'video/webm',
                      'application/octet-stream')
 
 
-def genUrl(prefix, folderspec, filename):
-    """Concatenate these three elements and make them a real URL.
-       No luck with urljoin(), so do it by hand for now.
-    """
-    tail = filename
-    if folderspec:
-        tail = folderspec + '/' + filename
-    return prefix + tail
-        
-
 def sortVideosList(videos, desiredsorting):
     """Sort the videos according to the list of extensions in
        'desiredsorting'. No special sorting algorithm used,
@@ -184,10 +176,11 @@ def sortVideosForPlayer(videos, selected):
     return result
 
 
+### Reading the metadata file
+
 import config
 
-
-def setDefaultNoVideoValues(view, context):
+def setDefaultNoVideoValues(view):
     from config import DEFAULT_WIDTH
     from config import DEFAULT_HEIGHT
     view.thumbnailurl = '/++resource++on.video/novideo.png'
@@ -214,57 +207,57 @@ def fixupConfig():
     return settings
 
 
-def removeJunk(lines):
+def genUrl(prefix, folderspec, filename):
+    """Concatenate these three elements and make them a real URL.
+       No luck with urljoin(), so do it by hand for now.
+    """
+    tail = filename
+    if folderspec:
+        tail = folderspec + '/' + filename
+    return prefix + tail
+        
+
+### Reading the metadata files:
+
+class O(object):
+    pass
+
+
+def removeMetadataCommentLines(lines):
     """Remove all empty lines and comment lines from the list"""
     return [ l for l in lines if not (l.startswith("\n") or l.startswith("#")) ]
 
 
-def getMetaDataFileHandle(view, context):
-    """Find the metadata file and open it, fixing up the registry
-       along the way.
+def genAbsolutePathToMetaFile(d, f):
+    """d: directory, f: basename"""
+    return os.path.join(d, f) + ".metadata"
+
+
+def getMetaDataFileLines(fspath, filename):
+    """Read the metadata file, so this part can be factored out from
+       the other functions, improving testability. The function attempts
+       to read no more than 2000 bytes (typical files tend to be like
+       250-400 bytes long).
     """
-    # print "getMetaDataFileHandle(%s, %s)" % (str(view), str(context))
-    settings = fixupConfig()
-    view.player = settings.urlbase + config.PLAYER
-    bpath = os.path.join(settings.fspath, context.filename)
-    meta_path = bpath + ".metadata"
-    # print "getMetaDataFileHandle() meta_path = %s" % meta_path
-    # print "metadata: ", meta_path
-    view.urlprefix = ""
-    if '/' in context.filename:
-        view.urlprefix = context.filename[:context.filename.rfind('/')]
-    #print "urlprefix: ", view.urlprefix
-    #import pdb; pdb.set_trace()
-    if not os.path.exists(meta_path):
-        #print "no metadata for ", context
-        setDefaultNoVideoValues(view, context)
-        view.thumbnailurl = '/++resource++on.video/nometafile.png'
-        return None, settings
-    mdfile = open(meta_path, "rb")
-    # thumbnail file:
-    view.thumbnailurl = None
-    lines = mdfile.readlines(2000)
-    lines = removeJunk(lines)
-    mdfile.close()
-    line = lines.pop(0)
-    thumb = line.split(':', 1)
-    if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-        view.thumbnailurl = genUrl(settings.urlbase, view.urlprefix, thumb[1].strip())
-    line = lines.pop(0)
-    ptime = line.split(':', 1)
-    if ptime[0].strip() == 'playing time' and len(ptime) > 1:
-        pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
-        if pt:
-            view.playing_time = pt.group()
-        else:
-            view.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
-    else:
-        lines.insert(0, line)           # preserve the unused line
-    return lines, settings
+    result = None
+    meta_path = genAbsolutePathToMetaFile(fspath, filename)
+    if os.path.exists(meta_path):
+        fh = open(meta_path, "rb+")
+        if fh:
+            lines = fh.readlines(2000)        # artificial limit... :|
+            lines = removeMetadataCommentLines(lines)
+            fh.close()
+            result = lines
+    return result
 
 
-def readVideoMetaData(view, context):
-    """Read the video.metadata file to set some parameters. Helper function.
+def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player = config.PLAYER):
+    """Parse the contents of the metadata file, passed in as a list
+       of lines via the 'lines' argument, and set attributes on the
+       passed-in object, which is assumed to be a view (but should
+       work with a generic object).
+
+       'lines' must be a list of lines from the metadata file
     """
     from config import MAX_WIDTH
     from config import DEFAULT_WIDTH
@@ -272,37 +265,61 @@ def readVideoMetaData(view, context):
     from config import MAX_HEIGHT
     from config import DEFAULT_HEIGHT
     
-    (lines, settings) = getMetaDataFileHandle(view, context)
-    if not lines:                  # integrity error, but hey...
-        return
+    vo.urlprefix = ""
 
+    ### context = video object, context.filename = relative path to the metadata
+    if '/' in filename:
+        vo.urlprefix = filename[:filename.rfind('/')]
+
+    meta_path = genAbsolutePathToMetaFile(fspath, filename)
+    if not os.path.exists(meta_path):
+        #print "no metadata for ", context
+        setDefaultNoVideoValues(vo)
+        vo.thumbnailurl = '/++resource++on.video/nometafile.png'
+        return vo
+
+    vo.thumbnailurl = None
+    line = lines.pop(0)
+    thumb = line.split(':', 1)
+    if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
+        vo.thumbnailurl = genUrl(urlbase, vo.urlprefix, thumb[1].strip())
+    line = lines.pop(0)
+    ptime = line.split(':', 1)
+    if ptime[0].strip() == 'playing time' and len(ptime) > 1:
+        pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
+        if pt:
+            vo.playing_time = pt.group()
+        else:
+            vo.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
+    else:
+        lines.insert(0, line)           # preserve the unused line
+
+    vo.player = urlbase + player
     # playing time:
-
     # set url to the video that should be played inline (how to manage different sizes?):
     line = lines.pop(0)
     svid = line.split(':', 1)
 
-    view._title = context.title
     # Algorithm:
     # We need to select an MP4 format video for direct play, if possible.
     # To arrive at a consistent list of video files to play/download, we
     # only remember the file name of the selected video and see, whether
     # it occurs again later down the road (eg. should there be multiple
     # MP4 videos available).
-    view.directplay = None
+    vo.directplay = None
     directplay = None
-    #print "*** readVideoMetaData(), urlprefix = ", view.urlprefix
+    #print "*** readVideoMetaData(), urlprefix = ", vo.urlprefix
     if svid[0].strip() == 'selected':
         vf = None
         if len(svid) > 1:
             vf = svid[1].strip()
             if len(vf) > 1 and vf[0] == '/':
                 vf = vf[1:]
-        if len(vf) and os.path.exists(os.path.join(settings.fspath, view.urlprefix, vf)):
+        if len(vf) and os.path.exists(os.path.join(fspath, vo.urlprefix, vf)):
             directplay = vf
 
-    view.x = DEFAULT_WIDTH
-    view.y = DEFAULT_HEIGHT
+    vo.x = DEFAULT_WIDTH
+    vo.y = DEFAULT_HEIGHT
     if 'default size' in lines[0]:          # skip if we don't have it, but don't eat the line
         line = lines.pop(0)
         dimensions = line.split(':', 1)
@@ -317,8 +334,8 @@ def readVideoMetaData(view, context):
             #print "need to adjust the default size (y)"
             y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
         #print "\tafter sanitizing values: x = %d, y = %d" % (x, y)
-        view.x = x
-        view.y = y
+        vo.x = x
+        vo.y = y
     videos = {}
 
     for row in lines:
@@ -328,22 +345,37 @@ def readVideoMetaData(view, context):
         # k: format, v: filename
         k, v = row.split(':', 1)
         v = v.strip()
-        #print "checking filenames: ", os.path.join(settings.fspath, view.urlprefix, v)
-        if not k in videos.keys() and os.path.exists(os.path.join(settings.fspath, view.urlprefix, v)):
-            v_url = genUrl(settings.urlbase, view.urlprefix, v)
+        #print "checking filenames: ", os.path.join(fspath, vo.urlprefix, v)
+        if not k in videos.keys() and os.path.exists(os.path.join(fspath, vo.urlprefix, v)):
+            v_url = genUrl(urlbase, vo.urlprefix, v)
             videos[k] = vVideo(v_url, k)
             #print "--- readVideoMetaData(): videos[%s] = %s" % (str(k), str(videos[k]))
     vlist = videos.values()
-    #print "\tvideo dimensions before handling files: x = %d, y = %d" % (view.x, view.y)
-    view.playfiles = sortVideosForPlayer(vlist, directplay)
-    #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in view.playfiles ]
-    #view.directplay = view.playfiles[0]
-    if len(view.playfiles) == 0:
-        setDefaultNoVideoValues(view, context)
+    #print "\tvideo dimensions before handling files: x = %d, y = %d" % (vo.x, vo.y)
+    vo.playfiles = sortVideosForPlayer(vlist, directplay)
+    #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in vo.playfiles ]
+    #vo.directplay = vo.playfiles[0]
+    if len(vo.playfiles) == 0:
+        setDefaultNoVideoValues(vo)
     # deep copy!!!
-    downloadlist = view.playfiles[:]
-    view.videos = sortVideosForDownload(downloadlist)
-    #print "*** readVideoMetaData() done, video dimensions: x = %d, y = %d" % (view.x, view.y)
+    downloadlist = vo.playfiles[:]
+    vo.videos = sortVideosForDownload(downloadlist)
+    #print "*** readVideoMetaData() done, video dimensions: x = %d, y = %d" % (vo.x, vo.y)
+    return vo
+
+
+def setVideoMetaData(view, context):
+    """Set the attributes related to the current video from the metadata
+       file.
+    """
+    settings = fixupConfig()
+    lines = getMetaDataFileLines(settings.fspath, context.filename)
+    vo = parseMetadataFileContents(lines, settings.urlbase,
+                                   settings.fspath, context.filename)
+    for a in vo.__dict__:
+        view.__setattr__(a, vo.__getattribute__(a))
+    view._title = context.title
+    return view
 
 
 class ViewThumbnail(grok.View):
@@ -356,7 +388,7 @@ class ViewThumbnail(grok.View):
     def __init__(self, context, request):
         super(ViewThumbnail, self).__init__(context, request)
         self.id = context.id
-        readVideoMetaData(self, context)
+        setVideoMetaData(self, context)
 
     @memoize
     def thumbnail(self):
@@ -381,7 +413,7 @@ class View(grok.View):
 
     def __init__(self, context, request):
         super(View, self).__init__(context, request)
-        readVideoMetaData(self, context)
+        setVideoMetaData(self, context)
 
     @memoize
     def videofiles(self):

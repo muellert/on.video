@@ -53,7 +53,7 @@ class IVideo(form.Schema):
         )
 
     filename = schema.TextLine(
-        title=_(u"Basename of the video file - eg. for 'myvideo.ogv', enter 'myvideo'."),
+        title=_(u"Basename of the video metadata file - eg. for 'myvideo.metadata', enter 'myvideo'."),
         )
 
     description = schema.Text(
@@ -459,6 +459,4 @@ class View(grok.View):
         config="config={'playlist':['%s',{'url':'%s','autoPlay':false}]}" % \
                 (thumbnail, video)
         return config
-
-
 

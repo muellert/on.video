@@ -8,7 +8,7 @@
 import logging
 from five import grok
 from zope import schema
-from zope.interface import Interface
+from zope.interface import Interface, Invalid
 from urlparse import urljoin
 
 from plone.directives import form
@@ -23,11 +23,9 @@ from plone.app.layout.viewlets.interfaces import IBelowContentBody
 
 from Products.Archetypes.interfaces.base import IBaseContent
 
+from datetime import datetime
 
 from on.video import _
-
-#from metadata import setVideoMetaData
-
 
 class IVideo(form.Schema):
     """A video metadata object.
@@ -459,4 +457,35 @@ class View(grok.View):
         config="config={'playlist':['%s',{'url':'%s','autoPlay':false}]}" % \
                 (thumbnail, video)
         return config
+
+
+
+# As per issue #469, bail out if the metadata file does not exist:
+
+@form.validator(field=IVideo['filename'])
+def validateFilename(value):
+    """Raise an exception if the file does not exist, or is unaccessible."""
+    registry = queryUtility(IRegistry)
+    settings = registry.forInterface(IVideoConfiguration)
+    meta_path = genAbsolutePathToMetaFile(settings.fspath, value)
+    accessible = True
+    try:
+        fp = open(meta_path, "r")
+        fp.close()
+    except:
+        accessible = False
+    if not os.path.isfile(meta_path) or not accessible:
+#        raise schema.ValidationError(u"Video metadata file does not exist, or is inaccessible, at %s" % \
+        raise Invalid(u"Video metadata file does not exist, or is inaccessible, at %s" % \
+                      meta_path)
+
+
+
+@form.validator(field=IVideo['recorded'])
+def validateRecorded(value):
+    """Raise an exception if the recording date lies in the future."""
+    if value > datetime.now():
+        raise Invalid(u"The video could not have been recorded in the future.")
+
+#        raise schema.ValidationError(u"The video could not have been recorded in the future.")
 

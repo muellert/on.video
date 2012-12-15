@@ -193,8 +193,9 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
-        #print "browser.contents: ", browser.contents
+        print "browser.contents: ", browser.contents
         self.failUnless('novideo' in browser.contents)
+        self.failUnless('application/octet-stream' in browser.contents)
 
     def test_read_video_with_thumbnail(self):
         """Create a video object with a thumbnail.

@@ -23,7 +23,7 @@
 	                                type ps/filetype" />
 	        <!-- specify the actual player: -->
 
-                <object tal:attributes="data view/player;
+                <object tal:condition="view/player|nothing" tal:attributes="data view/player;
 	                                width  view/x;
                                         height view/y;"
                                         width="#" height="#"

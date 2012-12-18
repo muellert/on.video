@@ -352,9 +352,11 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     #print "\tvideo dimensions before handling files: x = %d, y = %d" % (vo.x, vo.y)
     vo.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in vo.playfiles ]
-    vo.directplay = vo.playfiles[0]
+    #vo.directplay = vo.playfiles[0]
     if len(vo.playfiles) == 0:
         setDefaultNoVideoValues(vo)
+    else:
+        vo.directplay = vo.playfiles[0]
     # deep copy!!!
     downloadlist = vo.playfiles[:]
     vo.videos = sortVideosForDownload(downloadlist)

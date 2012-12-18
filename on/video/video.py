@@ -240,7 +240,7 @@ def getMetaDataFileLines(fspath, filename):
     result = None
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     if os.path.exists(meta_path):
-        fh = open(meta_path, "rb+")
+        fh = open(meta_path, "rb")
         if fh:
             lines = fh.readlines(2000)        # artificial limit... :|
             lines = removeMetadataCommentLines(lines)

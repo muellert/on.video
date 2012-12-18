@@ -174,6 +174,29 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.open(video.absolute_url())
         self.failUnless('nometafile' in browser.contents)
 
+    def XXtest_add_video_via_browser_no_metadata(self):
+        """Simulate adding a video object that has no metadata file.
+           The validator should raise an exception, which should
+           yield an error message in the browser.
+
+           We first need to learn about properly writing browser tests.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video',
+                                      title=u"My Sample Unavailable Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'no-metadata',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        browser.open(video.absolute_url())
+        self.failUnless('nometafile' in browser.contents)
+
     def test_read_video_metadata_no_video(self):
         """Create a video object that has a metadata file that points to
            non-existent video files..
@@ -193,9 +216,10 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
-        print "browser.contents: ", browser.contents
+        #print "browser.contents: ", browser.contents
         self.failUnless('novideo' in browser.contents)
-        self.failUnless('application/octet-stream' in browser.contents)
+        ### Disabled, because we so far inherently ignore unknown files:
+        #self.failUnless('application/octet-stream' in browser.contents)
 
     def test_read_video_with_thumbnail(self):
         """Create a video object with a thumbnail.
@@ -215,6 +239,26 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(view.playing_time == '20:30:50')
         self.failUnless(playlist[0].url.endswith(".mp4"))
         self.failUnless(downloads[0].url.endswith(".ogv"))
+
+    def test_video_summary_view(self):
+        """check whether the 'summary' view for the gallery works
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video4', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_3',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        browser.open(video.absolute_url() + '/@@summary')
+        self.failUnless('<div class="on-video-small-thumbnail">' in browser.contents)
+        self.failIf('<object>' in browser.contents)
 
     def test_video_summary_view(self):
         """check whether the 'summary' view for the gallery works

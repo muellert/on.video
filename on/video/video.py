@@ -42,7 +42,7 @@ class IVideo(form.Schema):
 
     recorded = schema.Datetime(
         title=_(u"Date of recording"),
-        #required=False,
+        required=False,
         )
     
     place = schema.Text(
@@ -240,7 +240,7 @@ def getMetaDataFileLines(fspath, filename):
     result = None
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     if os.path.exists(meta_path):
-        fh = open(meta_path, "rb+")
+        fh = open(meta_path, "rb")
         if fh:
             lines = fh.readlines(2000)        # artificial limit... :|
             lines = removeMetadataCommentLines(lines)
@@ -352,7 +352,7 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     #print "\tvideo dimensions before handling files: x = %d, y = %d" % (vo.x, vo.y)
     vo.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in vo.playfiles ]
-    #vo.directplay = vo.playfiles[0]
+    vo.directplay = vo.playfiles[0]
     if len(vo.playfiles) == 0:
         setDefaultNoVideoValues(vo)
     # deep copy!!!

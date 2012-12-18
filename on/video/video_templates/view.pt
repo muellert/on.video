@@ -44,11 +44,11 @@
 	    </video>
 	    <br />
 	    "<span class="video-title" tal:content="context/title">Caption</span>"
-	      <br />by
-	    <span class="onvideo-director" tal:content="context/director|nothing">director</span> on
-	      <span class="onvideo-recorded" tal:content="python:context.recorded.strftime('%Y-%m-%d %H:%M')">2011-01-01</span>,
-		recorded at
-	      <span class="onvideo-place" tal:content="context/place|nothing">place</span>
+	      <br /><span tal:condition="context/director">by
+	    <span class="onvideo-director" tal:content="context/director">director</span>, </span>
+	  <span tal:condition="context/recorded">
+	  on <span class="onvideo-recorded" tal:content="python:context.recorded.strftime('%Y-%m-%d %H:%M')">2011-01-01</span></span>
+	  <span tal:condition="context/place"> recorded at <span class="onvideo-place" tal:content="context/place">place</span></span>
         </div>
 
 	<div class="playingtime_label">Playing Time: 

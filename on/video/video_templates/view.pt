@@ -23,7 +23,7 @@
 	                                type ps/filetype" />
 	        <!-- specify the actual player: -->
 
-                <object tal:attributes="data view/player;
+                <object tal:condition="view/player|nothing" tal:attributes="data view/player;
 	                                width  view/x;
                                         height view/y;"
                                         width="#" height="#"
@@ -45,10 +45,10 @@
 	    <br />
 	    "<span class="video-title" tal:content="context/title">Caption</span>"
 	      <br />by
-	    <span class="onvideo-director" tal:content="context/director">director</span> on
+	    <span class="onvideo-director" tal:content="context/director|nothing">director</span> on
 	      <span class="onvideo-recorded" tal:content="python:context.recorded.strftime('%Y-%m-%d %H:%M')">2011-01-01</span>,
 		recorded at
-	      <span class="onvideo-place" tal:content="context/place">place</span>
+	      <span class="onvideo-place" tal:content="context/place|nothing">place</span>
         </div>
 
 	<div class="playingtime_label">Playing Time: 
@@ -69,7 +69,7 @@
 	</tal:downloadlinks>
 	<div class="visualClear"></div>
 	<div class="video-description"
-	     tal:content="structure context/body/raw | context/description/raw | string:No description available">
+	     tal:content="structure context/body/output | context/description/output | string:No description available">
 	         long description here
 	</div>
     </metal:content-core>

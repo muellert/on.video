@@ -58,10 +58,10 @@ def countFolderItems(item):
     counts = { 'Folder': 0, 'on.video.Video': 0 }
     #import pdb; pdb.set_trace()
 
-    if item.PortalType() == 'Folder':
+    if item.getPortalTypeName() == 'Folder':
         obj = item._brain.getObject()
         flist = obj.folderlistingFolderContents()
-    if item.PortalType() == 'Collection':
+    if item.getPortalTypeName() == 'Collection':
         catalog = getToolByName(self, 'portal_catalog')
         flist = self.context.results(batch=False)
 

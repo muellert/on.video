@@ -39,9 +39,11 @@ class TestOnVideoHandling(unittest.TestCase):
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
-        for i in range(1, 6):
+        for i in range(1, 7):
             sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_%d.metadata' % i)
             shutil.copy(sampledata, self.td)
+        sampledata = os.path.join(os.path.dirname(__file__), 'Vincent_Untz.metadata')
+        shutil.copy(sampledata, self.td)
         sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
         shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
@@ -115,6 +117,43 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.open(video.absolute_url())
         self.failUnless('nothumbnail' in browser.contents)
 
+    def test_read_video3_metadata(self):
+        """Create a video object and inspect its attributes to see whether
+           it conforms to the specs.
+        """
+        v = self.portal.invokeFactory('on.video.Video', 'video2', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'Vincent_Untz',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        import transaction; transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        browser.handleErrors = False
+        video = self.portal[v]
+        browser.open(video.absolute_url())
+        #print "browser.contents: ", browser.contents
+        self.failUnless('novideo' in browser.contents)
+
+    def test_read_video_with_no_playing_time(self):
+        """Check the generated playlist: What about unknown file extensions?
+        """
+        from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
+        v = self.portal.invokeFactory('on.video.Video', 'video8', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_6',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        view = video.restrictedTraverse('@@view')
+        import pdb; pdb.set_trace()
+        self.failUnless(view.playing_time == 'unknown')
+
     def test_read_video_no_metadata(self):
         """Create a video object that has no metadata file.
            See whether the code detects this properly and
@@ -154,7 +193,9 @@ class TestOnVideoHandling(unittest.TestCase):
         browser.handleErrors = False
         video = self.portal[v]
         browser.open(video.absolute_url())
+        print "browser.contents: ", browser.contents
         self.failUnless('novideo' in browser.contents)
+        self.failUnless('application/octet-stream' in browser.contents)
 
     def test_read_video_with_thumbnail(self):
         """Create a video object with a thumbnail.
@@ -269,6 +310,42 @@ class TestOnVideoHandling(unittest.TestCase):
         view = video.restrictedTraverse('@@view')
         self.failUnless(view.x == DEFAULT_WIDTH)
         self.failUnless(view.y == DEFAULT_HEIGHT)
+
+    def test_read_video_with_no_playing_time(self):
+        """See whether the file is correctly read if the playing time
+           is not specified.
+        """
+        from on.video.config import DEFAULT_WIDTH, DEFAULT_HEIGHT
+        v = self.portal.invokeFactory('on.video.Video', 'video8', title=u"My Sample Video",
+                                      name = 'some kind of video',
+                                      author = 'me, myself',
+                                      recorded = datetime.now(),
+                                      filename = 'sample_video_6',
+                                      place = 'nirvana',
+                                      body = '<strong>some interesting story</strong>')
+        video = self.portal[v]
+        import transaction; transaction.commit()
+        view = video.restrictedTraverse('@@view')
+        #import pdb; pdb.set_trace()
+        self.failUnless(view.playing_time == 'unknown')
+
+    def test_fix_settings_url(self):
+        """See whether the URL is properly fixed.
+        """
+        from on.video.video import fixupConfig
+        oldsettings = self.settings
+        self.settings.urlbase = 'http://nohost'
+        fixupConfig()
+        self.failUnless(self.settings.urlbase.endswith('/'))
+
+    def test_fix_settings_fspath(self):
+        """See whether the file system path is properly reset.
+        """
+        from on.video.video import fixupConfig
+        oldsettings = self.settings
+        self.settings.fspath = u'/nosuchfileordirectory'
+        fixupConfig()
+        self.failUnless(self.settings.fspath == u'/tmp')
 
     def test_video_format_thingy(self):
         from on.video.video import vVideo

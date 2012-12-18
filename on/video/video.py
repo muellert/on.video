@@ -42,7 +42,7 @@ class IVideo(form.Schema):
 
     recorded = schema.Datetime(
         title=_(u"Date of recording"),
-        #required=False,
+        required=False,
         )
     
     place = schema.Text(

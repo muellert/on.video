@@ -59,8 +59,12 @@ def countFolderItems(item):
     #import pdb; pdb.set_trace()
 
     if item.getPortalTypeName() == 'Folder':
-        obj = item._brain.getObject()
-        flist = obj.folderlistingFolderContents()
+        # import pdb; pdb.set_trace()
+        try:
+            flist = item.folderlistingFolderContents()
+        except:
+            obj = item._brain.getObject()
+            flist = obj.folderlistingFolderContents()
     if item.getPortalTypeName() == 'Collection':
         catalog = getToolByName(self, 'portal_catalog')
         flist = self.context.results(batch=False)

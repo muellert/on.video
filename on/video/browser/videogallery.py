@@ -113,6 +113,7 @@ def genSmallView(item, request = None):
         result['thumb'] = vtn.thumbnail()
         titles = shorttitle(item.title)
         result['title'] = titles['short']
+        result['director'] = item.director
         result['longtitle'] = titles['long']
     # print "genSmallView(): result= ", result
     elif item.portal_type == 'Image':

@@ -20,7 +20,7 @@
                                        Batch python:modules['Products.CMFPlone'].Batch;
                                        foldercontents view/contents;
                                        b_start python:request.get('b_start', 0);
-                                       batch python:isinstance(foldercontents, Batch) and foldercontents or Batch(foldercontents, limit_display or 15, b_start, orphan=1);
+                                       batch python:isinstance(foldercontents, Batch) and foldercontents or Batch(foldercontents, limit_display or 12, b_start, orphan=1);
                                        normalizeString nocall: context/plone_utils/normalizeString;
                                        navigation_root_url context/@@plone_portal_state/navigation_root_url">
                 <tal:listing condition="batch">
@@ -36,9 +36,11 @@
 		       </a>
 		       <br />
 		       <div tal:condition="python:item['portaltype'] == 'Folder'"
-			    class="videodesc">
-			   <span tal:replace="item/sub_folder" /> galleries, <span tal:replace="item/sub_videos" /> videos
+			    class="videodesc"><span tal:condition="item/sub_folder" tal:omit-tag="">
+			   <span tal:replace="item/sub_folder" /> galleries, </span><span tal:replace="item/sub_videos" /> videos
 		       </div>
+		       <div tal:condition="python:item['portaltype'] == 'on.video.Video' and len(item['director'])"
+                            class="videodesc" tal:content="item/director" />
 		       <div tal:condition="python:item['portaltype'] == 'on.video.Video'"
 			    class="videodesc">
 			   Duration: <span tal:replace="item/playingtime" />

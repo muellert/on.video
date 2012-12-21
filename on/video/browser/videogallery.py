@@ -59,8 +59,12 @@ def countFolderItems(item):
     #import pdb; pdb.set_trace()
 
     if item.getPortalTypeName() == 'Folder':
-        obj = item._brain.getObject()
-        flist = obj.folderlistingFolderContents()
+        # import pdb; pdb.set_trace()
+        try:
+            flist = item.folderlistingFolderContents()
+        except:
+            obj = item._brain.getObject()
+            flist = obj.folderlistingFolderContents()
     if item.getPortalTypeName() == 'Collection':
         catalog = getToolByName(self, 'portal_catalog')
         flist = self.context.results(batch=False)
@@ -69,6 +73,7 @@ def countFolderItems(item):
         if not item.portal_type in ('Folder', 'on.video.Video'):
             continue
         counts[item.portal_type] += 1
+        
     return (counts['Folder'], counts['on.video.Video'])
 
 
@@ -114,7 +119,7 @@ def genSmallView(item, request = None):
         titles = shorttitle(item.title)
         result['title'] = titles['short']
         result['longtitle'] = titles['long']
-    # print "genSmallView(): result= ", result
+
     elif item.portal_type == 'Image':
         result['sub_folder'] = None
         result['sub_videos'] = None

@@ -36,7 +36,7 @@ class IVideo(form.Schema):
         )
     
     director = schema.TextLine(
-        title=_(u"Author/Director"),
+        title=_(u"Author"),
         required=False,
         )
 

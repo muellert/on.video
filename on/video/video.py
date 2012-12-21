@@ -36,7 +36,7 @@ class IVideo(form.Schema):
         )
     
     director = schema.TextLine(
-        title=_(u"Author/Director"),
+        title=_(u"Author"),
         required=False,
         )
 
@@ -277,44 +277,50 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         return vo
 
     vo.thumbnailurl = None
-    line = lines.pop(0)
-    thumb = line.split(':', 1)
-    if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-        vo.thumbnailurl = genUrl(urlbase, vo.urlprefix, thumb[1].strip())
-    line = lines.pop(0)
-    ptime = line.split(':', 1)
-    if ptime[0].strip() == 'playing time' and len(ptime) > 1:
-        pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
-        if pt:
-            vo.playing_time = pt.group()
+    try:
+        
+        line = lines.pop(0)
+        thumb = line.split(':', 1)
+        if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
+            vo.thumbnailurl = genUrl(urlbase, vo.urlprefix, thumb[1].strip())
+        line = lines.pop(0)
+        ptime = line.split(':', 1)
+        if ptime[0].strip() == 'playing time' and len(ptime) > 1:
+            pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
+            if pt:
+                vo.playing_time = pt.group()
+            else:
+                vo.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
         else:
-            vo.playing_time = 'unknown' #None #'0:00:00' # unnown playing time
-    else:
-        lines.insert(0, line)           # preserve the unused line
+            lines.insert(0, line)           # preserve the unused line
 
-    vo.player = urlbase + player
-    # playing time:
-    # set url to the video that should be played inline (how to manage different sizes?):
-    line = lines.pop(0)
-    svid = line.split(':', 1)
+        vo.player = urlbase + player
+        # playing time:
+        # set url to the video that should be played inline (how to manage different sizes?):
+        line = lines.pop(0)
+        svid = line.split(':', 1)
 
-    # Algorithm:
-    # We need to select an MP4 format video for direct play, if possible.
-    # To arrive at a consistent list of video files to play/download, we
-    # only remember the file name of the selected video and see, whether
-    # it occurs again later down the road (eg. should there be multiple
-    # MP4 videos available).
-    vo.directplay = None
-    directplay = None
-    #print "*** readVideoMetaData(), urlprefix = ", vo.urlprefix
-    if svid[0].strip() == 'selected':
-        vf = None
-        if len(svid) > 1:
-            vf = svid[1].strip()
-            if len(vf) > 1 and vf[0] == '/':
-                vf = vf[1:]
-        if len(vf) and os.path.exists(os.path.join(fspath, vo.urlprefix, vf)):
-            directplay = vf
+        # Algorithm:
+        # We need to select an MP4 format video for direct play, if possible.
+        # To arrive at a consistent list of video files to play/download, we
+        # only remember the file name of the selected video and see, whether
+        # it occurs again later down the road (eg. should there be multiple
+        # MP4 videos available).
+        vo.directplay = None
+        directplay = None
+        #print "*** readVideoMetaData(), urlprefix = ", vo.urlprefix
+        if svid[0].strip() == 'selected':
+            vf = None
+            if len(svid) > 1:
+                vf = svid[1].strip()
+                if len(vf) > 1 and vf[0] == '/':
+                    vf = vf[1:]
+            if len(vf) and os.path.exists(os.path.join(fspath, vo.urlprefix, vf)):
+                directplay = vf
+    except:
+        setDefaultNoVideoValues(vo)
+        vo.thumbnailurl = '/++resource++on.video/invalidmetafile.png'
+        return vo
 
     vo.x = DEFAULT_WIDTH
     vo.y = DEFAULT_HEIGHT
@@ -486,7 +492,7 @@ def validateFilename(value):
 @form.validator(field=IVideo['recorded'])
 def validateRecorded(value):
     """Raise an exception if the recording date lies in the future."""
-    if value > datetime.now():
+    if value is not None and value > datetime.now():
         raise Invalid(u"The video could not have been recorded in the future.")
 
 #        raise schema.ValidationError(u"The video could not have been recorded in the future.")

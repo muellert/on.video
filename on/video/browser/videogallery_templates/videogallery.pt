@@ -27,7 +27,7 @@
 
                   <div metal:use-macro="context/batch_macros/macros/navigation" />
   
-		  <div tal:repeat="item batch">
+		  <div class="videogallerycontainer" tal:repeat="item batch">
 		    <div tal:define="odd repeat/item/odd; ltitle item/longtitle"
 		         tal:attributes="class python:odd and 'even' or 'odd'">
 		      <a href="#" titles="#" tal:attributes="href item/path; title ltitle;" class="videothumb">
@@ -40,9 +40,10 @@
 			   <span tal:replace="item/sub_folder" /> galleries, </span><span tal:replace="item/sub_videos" /> videos
 		       </div>
 		       <div tal:condition="python:item['portaltype'] == 'on.video.Video' and len(item['director'])"
-                            class="videodesc" tal:content="item/director" />
+                            class="videodirector"> by <span tal:content="item/director" />
+		       </div>
 		       <div tal:condition="python:item['portaltype'] == 'on.video.Video'"
-			    class="videodesc">
+			    class="videoplayingtime">
 			   Duration: <span tal:replace="item/playingtime" />
 		       </div>
 		       

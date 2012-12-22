@@ -9,15 +9,21 @@
   overflow: hidden;
   text-align: center;
   width: 30%;
-  height: 42mm;
+  height: 52mm;
 }
 
 #videowrapper .even {
   background-color: #d6dae1;
 }
 
+#videowrapper .listingBar {
+  clear: left;
+}
+                             
 #videowrapper h4 {
-  margin: 10px 5px 8px 5px;
+  margin: 10px 40px 8px 40px;
+  text-align: center;
+  height: 3em;
 }
 
 .videothumb img {

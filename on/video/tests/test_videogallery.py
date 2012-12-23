@@ -46,6 +46,7 @@ class TestVideoGallery(unittest.TestCase):
     def setUp(self):
         self.portal = self.layer['portal']
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        #setRoles(self.portal, TEST_USER_NAME, ['Manager'])
         self.portal.invokeFactory("Folder", id='testfolder', title='Testfolder')
         transaction.commit()
         registry = queryUtility(IRegistry)
@@ -100,16 +101,58 @@ class TestVideoGallery(unittest.TestCase):
         """Test that only videos and folders are being included in the
            listing.
         """
-        folder = self.layer['portal']['testfolder']
-        for i in range(1,5):
-            folder.invokeFactory('on.video.Video', id='test%d' % i)
-        folder.invokeFactory('Document', id='some_document')
-        folder.setLayout('on-video-gallery')
-        app = self.layer['app']
         portal = self.layer['portal']
+        folder = portal['testfolder']
+        for i in range(1,5):
+            folder.invokeFactory('on.video.Video', id='test%d' % i,director='someone', filename='sample_video_3' )
+        folder.invokeFactory('Document', id='some_document')
+        folder.setLayout('videogallery')
+        transaction.commit()
+        app = self.layer['app']
         portalURL = portal.absolute_url()
         browser = Browser(app)
         browser.addHeader('Authorization', 'Basic %s:%s' % (
-            SITE_OWNER_NAME, SITE_OWNER_PASSWORD, ))
+            TEST_USER_NAME, TEST_USER_PASSWORD))
         browser.open(portalURL + '/testfolder')
+        self.failUnless('test1' in browser.contents)
         self.failIf('some_document' in browser.contents)
+
+    def test_gallery_item_director(self):
+        """Test that the director is being displayed."""
+        portal = self.layer['portal']
+        folder = portal['testfolder']
+        for i in range(1,4):
+            folder.invokeFactory('on.video.Video', id='test%d' % i,
+                                 director='someone',
+                                 filename='sample_video_3')
+        folder.setLayout('videogallery')
+        transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        portalURL = portal.absolute_url()
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            TEST_USER_NAME, TEST_USER_PASSWORD))
+        browser.open(portalURL + '/testfolder')
+        self.failIf('someone' not in browser.contents)
+
+    def test_gallery_item_title_too_long(self):
+        """Test that the title is being cut off when it is too long."""
+        portal = self.layer['portal']
+        folder = portal['testfolder']
+        folder.invokeFactory('on.video.Video', id='test1',
+                             director='someone',
+                             title=u'Hi-Lite: a Verification Toolking for Unit Test and Unit Proof - Moy',
+                             filename='sample_video_3')
+        folder.invokeFactory('on.video.Video', id='test2',
+                             director='someone',
+                             title=u'0123 4567 8901 2345 6789',
+                             filename='sample_video_3')
+        folder.setLayout('videogallery')
+        transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        portalURL = portal.absolute_url()
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            TEST_USER_NAME, TEST_USER_PASSWORD))
+        browser.open(portalURL + '/testfolder')
+        self.failIf('someone' not in browser.contents)

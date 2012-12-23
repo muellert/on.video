@@ -39,13 +39,12 @@ class TestOnVideoHandling(unittest.TestCase):
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
-        for i in range(1, 7):
-            sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_%d.metadata' % i)
+        files_to_copy = [ 'sample_video_%d.metadata' % i for i in range(1, 8) ]
+        otherfiles = [ 'Vincent_Untz.metadata', 'corrupted.metadata', 'thumb.png' ]
+        files_to_copy = files_to_copy + otherfiles
+        for f in files_to_copy:
+            sampledata = os.path.join(os.path.dirname(__file__), f)
             shutil.copy(sampledata, self.td)
-        sampledata = os.path.join(os.path.dirname(__file__), 'Vincent_Untz.metadata')
-        shutil.copy(sampledata, self.td)
-        sampledata = os.path.join(os.path.dirname(__file__), 'thumb.png')
-        shutil.copy(sampledata, self.td)
         videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
                       'sample_video_2.mp4', 'sample_video_2.avi',
                       'sample_video_3.mp4', 'sample_video_3_medium.ogv',
@@ -397,4 +396,13 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(v.url == 'bla.ogv')
         self.failUnless(v.displayformat == 'OGV')
         self.failUnless(v.filetype == 'video/ogg')
+
+    def test_rejection_of_corrupted_files(self):
+        from on.video.video import parseMetadataFileContents, fixupConfig, getMetaDataFileLines
+        settings = fixupConfig()
+        lines = getMetaDataFileLines(settings.fspath, 'corrupted')
+        vo = parseMetadataFileContents(lines, settings.urlbase, settings.fspath, 'corrupted')
+        #import pdb; pdb.set_trace()
+        self.failUnless(vo.thumbnailurl == '/++resource++on.video/invalidmetafile.png')
+
 

@@ -40,7 +40,7 @@ class TestOnVideoHandling(unittest.TestCase):
         # generate a set of mockup files:
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
         files_to_copy = [ 'sample_video_%d.metadata' % i for i in range(1, 8) ]
-        otherfiles = [ 'Vincent_Untz.metadata', 'corrupted.metadata', 'thumb.png' ]
+        otherfiles = [ 'Vincent_Untz.metadata', 'corrupted1.metadata', 'corrupted2.metadata', 'thumb.png' ]
         files_to_copy = files_to_copy + otherfiles
         for f in files_to_copy:
             sampledata = os.path.join(os.path.dirname(__file__), f)
@@ -400,9 +400,8 @@ class TestOnVideoHandling(unittest.TestCase):
     def test_rejection_of_corrupted_files(self):
         from on.video.video import parseMetadataFileContents, fixupConfig, getMetaDataFileLines
         settings = fixupConfig()
-        lines = getMetaDataFileLines(settings.fspath, 'corrupted')
-        vo = parseMetadataFileContents(lines, settings.urlbase, settings.fspath, 'corrupted')
-        #import pdb; pdb.set_trace()
+        lines = getMetaDataFileLines(settings.fspath, 'corrupted1')
+        vo = parseMetadataFileContents(lines, settings.urlbase, settings.fspath, 'corrupted1')
         self.failUnless(vo.thumbnailurl == '/++resource++on.video/invalidmetafile.png')
 
 

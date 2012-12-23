@@ -141,11 +141,7 @@ class TestVideoGallery(unittest.TestCase):
         folder = portal['testfolder']
         folder.invokeFactory('on.video.Video', id='test1',
                              director='someone',
-                             title=u'Hi-Lite: a Verification Toolking for Unit Test and Unit Proof - Moy',
-                             filename='sample_video_3')
-        folder.invokeFactory('on.video.Video', id='test2',
-                             director='someone',
-                             title=u'0123 4567 8901 2345 6789',
+                             title=u'0123456789012345678901234567890123456789012345678901234567890',
                              filename='sample_video_3')
         folder.setLayout('videogallery')
         transaction.commit()
@@ -155,4 +151,22 @@ class TestVideoGallery(unittest.TestCase):
         browser.addHeader('Authorization', 'Basic %s:%s' % (
             TEST_USER_NAME, TEST_USER_PASSWORD))
         browser.open(portalURL + '/testfolder')
-        self.failIf('someone' not in browser.contents)
+        self.failUnless('...</h4>' in browser.contents)
+
+    def test_gallery_item_title_not_too_long(self):
+        """Test that the title is not being cut off when it is short enough."""
+        portal = self.layer['portal']
+        folder = portal['testfolder']
+        folder.invokeFactory('on.video.Video', id='test2',
+                             director='someone',
+                             title=u'01234567890123456789012345678901234567890123456789',
+                             filename='sample_video_3')
+        folder.setLayout('videogallery')
+        transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        portalURL = portal.absolute_url()
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            TEST_USER_NAME, TEST_USER_PASSWORD))
+        browser.open(portalURL + '/testfolder')
+        self.failUnless('789</h4>' in browser.contents)

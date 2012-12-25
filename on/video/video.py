@@ -239,6 +239,7 @@ def getMetaDataFileLines(fspath, filename):
        250-400 bytes long).
     """
     result = []
+    lines = []
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     if os.path.exists(meta_path):
         fh = open(meta_path, "rb")

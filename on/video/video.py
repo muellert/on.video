@@ -10,6 +10,7 @@ from five import grok
 from zope import schema
 from zope.interface import Interface, Invalid
 from urlparse import urljoin
+import string
 
 from plone.directives import form
 from Products.CMFCore.utils import getToolByName
@@ -223,7 +224,7 @@ class O(object):
 
 def removeMetadataCommentLines(lines):
     """Remove all empty lines and comment lines from the list"""
-    return [ l for l in lines if not (l.startswith("\n") or l.startswith("#")) ]
+    return [ l.strip() for l in lines if not (l.startswith("\n") or l.startswith("#")) ]
 
 
 def genAbsolutePathToMetaFile(d, f):
@@ -237,7 +238,7 @@ def getMetaDataFileLines(fspath, filename):
        to read no more than 2000 bytes (typical files tend to be like
        250-400 bytes long).
     """
-    result = None
+    result = []
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     if os.path.exists(meta_path):
         fh = open(meta_path, "rb")
@@ -245,7 +246,9 @@ def getMetaDataFileLines(fspath, filename):
             lines = fh.readlines(2000)        # artificial limit... :|
             lines = removeMetadataCommentLines(lines)
             fh.close()
-            result = lines
+    for line in lines:
+        if ':' in line:
+            result.append(map(string.strip, line.split(':', 1)))
     return result
 
 
@@ -277,16 +280,14 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         return vo
 
     vo.thumbnailurl = None
+    #import pdb; pdb.set_trace()
     try:
-        
         line = lines.pop(0)
-        thumb = line.split(':', 1)
-        if thumb[0].strip() == 'thumbnail' and len(thumb) > 1 and thumb[1].strip() != '':
-            vo.thumbnailurl = genUrl(urlbase, vo.urlprefix, thumb[1].strip())
+        if line[0] == 'thumbnail' and len(line) > 1 and line[1] != '':
+            vo.thumbnailurl = genUrl(urlbase, vo.urlprefix, line[1])
         line = lines.pop(0)
-        ptime = line.split(':', 1)
-        if ptime[0].strip() == 'playing time' and len(ptime) > 1:
-            pt = re.search('(\d+:\d\d:\d\d)', ptime[1])
+        if line[0] == 'playing time' and len(line) > 1:
+            pt = re.search('(\d+:\d\d:\d\d)', line[1])
             if pt:
                 vo.playing_time = pt.group()
             else:
@@ -298,7 +299,6 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         # playing time:
         # set url to the video that should be played inline (how to manage different sizes?):
         line = lines.pop(0)
-        svid = line.split(':', 1)
 
         # Algorithm:
         # We need to select an MP4 format video for direct play, if possible.
@@ -309,46 +309,46 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         vo.directplay = None
         directplay = None
         #print "*** readVideoMetaData(), urlprefix = ", vo.urlprefix
-        if svid[0].strip() == 'selected':
+        if line[0] == 'selected':
             vf = None
-            if len(svid) > 1:
-                vf = svid[1].strip()
+            if len(line) > 1:
+                vf = line[1]
                 if len(vf) > 1 and vf[0] == '/':
                     vf = vf[1:]
             if len(vf) and os.path.exists(os.path.join(fspath, vo.urlprefix, vf)):
                 directplay = vf
+
+        vo.x = DEFAULT_WIDTH
+        vo.y = DEFAULT_HEIGHT
+        if 'default size' in lines[0]:          # skip if we don't have it, but don't eat the line
+            line = lines.pop(0)
+            #print "*** reading the specified default size: ", dimensions
+            x, y = map(int, line[1].split('x', 1))
+            #print "\t\tx = %d, y = %d" % (x, y)
+            # make sure the video doesn't get too small or too big:
+            if x < 100 or x > MAX_WIDTH:
+                #print "need to adjust the default size (x)"
+                x = DEFAULT_WIDTH
+            if y < MIN_HEIGHT or y > MAX_HEIGHT:
+                #print "need to adjust the default size (y)"
+                y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
+            #print "\tafter sanitizing values: x = %d, y = %d" % (x, y)
+            vo.x = x
+            vo.y = y
     except:
         setDefaultNoVideoValues(vo)
         vo.thumbnailurl = '/++resource++on.video/invalidmetafile.png'
         return vo
-
-    vo.x = DEFAULT_WIDTH
-    vo.y = DEFAULT_HEIGHT
-    if 'default size' in lines[0]:          # skip if we don't have it, but don't eat the line
-        line = lines.pop(0)
-        dimensions = line.split(':', 1)
-        #print "*** reading the specified default size: ", dimensions
-        x, y = map(int, dimensions[1].strip().split('x', 1))
-        #print "\t\tx = %d, y = %d" % (x, y)
-        # make sure the video doesn't get too small or too big:
-        if x < 100 or x > MAX_WIDTH:
-            #print "need to adjust the default size (x)"
-            x = DEFAULT_WIDTH
-        if y < MIN_HEIGHT or y > MAX_HEIGHT:
-            #print "need to adjust the default size (y)"
-            y = x * DEFAULT_HEIGHT/DEFAULT_WIDTH
-        #print "\tafter sanitizing values: x = %d, y = %d" % (x, y)
-        vo.x = x
-        vo.y = y
     videos = {}
 
-    for row in lines:
+    # now process the list of video files:
+    for line in lines:
         #print "... readVideoMetaData(): current row: -->%s<--" % row
-        if ':' not in row:
+        if len(line) == 1:
             break
         # k: format, v: filename
-        k, v = row.split(':', 1)
-        v = v.strip()
+        k, v = line[:]
+        v = v
         #print "checking filenames: ", os.path.join(fspath, vo.urlprefix, v)
         if not k in videos.keys() and os.path.exists(os.path.join(fspath, vo.urlprefix, v)):
             v_url = genUrl(urlbase, vo.urlprefix, v)
@@ -483,10 +483,17 @@ def validateFilename(value):
     except:
         accessible = False
     if not os.path.isfile(meta_path) or not accessible:
-#        raise schema.ValidationError(u"Video metadata file does not exist, or is inaccessible, at %s" % \
         raise Invalid(u"Video metadata file does not exist, or is inaccessible, at %s" % \
                       meta_path)
-
+    settings = fixupConfig()
+    lines = getMetaDataFileLines(settings.fspath, value)
+    vo = parseMetadataFileContents(lines, settings.urlbase,
+                                   settings.fspath, value)
+    #if vo.thumbnailurl == '/++resource++on.video/novideo.png':
+    #    raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
+    if '/++resource++on.video/' in vo.thumbnailurl and \
+           vo.thumbnailurl != '/++resource++on.video/nothumbnail.png':
+        raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
 
 
 @form.validator(field=IVideo['recorded'])

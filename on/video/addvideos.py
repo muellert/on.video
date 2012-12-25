@@ -104,7 +104,7 @@ def getVideoList(path):
         result[os.path.join(prefix, element)] = beautifyId(element)
     return result
 
-def addAllVideos(site, folder, fs_path, rights, publish = False):
+def addAllVideos(site, folder, fs_path, rights, options):
     """Add all videos found in the fs_path to the site."""
     parts = folder.split('/')
     target = site
@@ -115,6 +115,11 @@ def addAllVideos(site, folder, fs_path, rights, publish = False):
         if part not in target.keys():
             target.invokeFactory('Folder', id=part, title=part)
         target = target[part]
+    # issue #490:
+    if options.layout:
+        target.setLayout(options.layout)
+    else:
+        target.setLayout('videogallery')
     videos = getVideoList(fs_path)      # a dictionary
     for video in videos:
         newid = video[video.rfind('/')+1:]
@@ -141,6 +146,9 @@ def setup_parser():
         help="Which folder to import into (default: use an auto-generated name)")
     parser.add_option(
         '-l', '--license', dest="licensekey", default="CC-BY-NC-ND", action='store',
+        help="""License string (default: CC-BY-NC-ND). If you want to use something else, specify the full required HTML code. If you want no license, specify NONE.""")
+    parser.add_option(
+        '-L', '--Layout', dest="layout", default="videogallery", action='store',
         help="""License string (default: CC-BY-NC-ND). If you want to use something else, specify the full required HTML code. If you want no license, specify NONE.""")
     parser.add_option(
         '-p', '--publish', dest="publish", default=False, action='store_true',
@@ -194,6 +202,6 @@ def main(app=None, instance_path=None):
     else:
         rights = None
 
-    addAllVideos(site, folder, fs_path, rights, options.publish)
+    addAllVideos(site, folder, fs_path, rights, options)
 
     transaction.commit()

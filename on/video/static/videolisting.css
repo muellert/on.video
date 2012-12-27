@@ -5,11 +5,11 @@
 #videowrapper  .even,
 #videowrapper .odd {
   float:left;
-  padding: 0px 5px;
+  padding: 5px 5px;
   overflow: hidden;
   text-align: center;
   width: 30%;
-  height: 52mm;
+  height: 47mm;
 }
 
 #videowrapper .even {
@@ -21,9 +21,10 @@
 }
                              
 #videowrapper h4 {
-  margin: 10px 40px 8px 40px;
+  margin: auto 40px;
   text-align: center;
-  height: 3em;
+  vertical-align: middle;
+  height: 4em;
 }
 
 .videothumb img {

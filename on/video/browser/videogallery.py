@@ -169,4 +169,4 @@ class VideoGallery(grok.View):
 
         b_start = int(self.context.REQUEST.get('b_start', 0))
         #print "VideoGallery() update: b_start = %d, fl = %s" % (b_start, str(fl))
-        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=15, start=b_start)
+        self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=12, start=b_start)

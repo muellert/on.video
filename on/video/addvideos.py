@@ -109,7 +109,7 @@ def addAllVideos(site, folder, fs_path, rights, options):
     parts = folder.split('/')
     target = site
 
-    if publish:
+    if options.publish:
         wft = getToolByName(site, 'portal_workflow')
     for part in parts:
         if part not in target.keys():
@@ -128,7 +128,7 @@ def addAllVideos(site, folder, fs_path, rights, options):
         if rights:
             newvideo.body = RichTextValue('<p class="licenseimage">' + rights + '</p>')
         newvideo.setExcludeFromNav(True)
-        if publish:
+        if options.publish:
             wft.doActionFor(newvideo, 'publish')
 
 ### system integration boilerplate:

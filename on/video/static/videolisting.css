@@ -2,14 +2,14 @@
  width: 670px;
 }
 
-#videowrapper  .even,
+#videowrapper .even,
 #videowrapper .odd {
   float:left;
   padding: 5px 5px;
   overflow: hidden;
   text-align: center;
   width: 30%;
-  height: 47mm;
+  height: 25ex;
 }
 
 #videowrapper .even {
@@ -23,8 +23,9 @@
 #videowrapper h4 {
   margin: auto 40px;
   text-align: center;
-  vertical-align: middle;
-  height: 4em;
+  vertical-align: text-bottom;
+  height: 6.8ex;
+  letter-spacing:0;
 }
 
 .videothumb img {

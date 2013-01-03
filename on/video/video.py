@@ -32,6 +32,11 @@ class IVideo(form.Schema):
     """A video metadata object.
     """
 
+    id = schema.TextLine(
+        title=_(u"Id"),
+        required=False,
+        )
+    
     title = schema.TextLine(
         title=_(u"Name"),
         )

@@ -32,10 +32,11 @@ class IVideo(form.Schema):
     """A video metadata object.
     """
 
-    id = schema.TextLine(
-        title=_(u"Id"),
-        required=False,
-        )
+### disable until we know how to deal with the resulting errors:
+#    id = schema.TextLine(
+#        title=_(u"Id"),
+#        required=False,
+#        )
     
     title = schema.TextLine(
         title=_(u"Name"),

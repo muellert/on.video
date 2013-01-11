@@ -19,8 +19,8 @@ import shutil
 import unittest2 as unittest
 
 from plone.app.testing import TEST_USER_ID
-#from plone.app.testing import TEST_USER_NAME
-#from plone.app.testing import TEST_USER_PASSWORD
+from plone.app.testing import SITE_OWNER_NAME
+from plone.app.testing import SITE_OWNER_PASSWORD
 
 from plone.app.testing import setRoles
 
@@ -39,16 +39,16 @@ class TestOnVideoHandling(unittest.TestCase):
         self.settings = registry.forInterface(IVideoConfiguration)
         # generate a set of mockup files:
         self.td = tempfile.mkdtemp(prefix = "on.video-tests.")
+        videofiles = ['sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
+                      'sample_video_2.mp4', 'sample_video_2.avi',
+                      'sample_video_3.mp4', 'sample_video_3_medium.ogv',
+                      ]
         files_to_copy = [ 'sample_video_%d.metadata' % i for i in range(1, 8) ]
         otherfiles = [ 'Vincent_Untz.metadata', 'corrupted1.metadata', 'corrupted2.metadata', 'thumb.png' ]
-        files_to_copy = files_to_copy + otherfiles
+        files_to_copy = files_to_copy + otherfiles  + videofiles
         for f in files_to_copy:
             sampledata = os.path.join(os.path.dirname(__file__), f)
             shutil.copy(sampledata, self.td)
-        videofiles = ('sample_video_1_big.ogv', 'sample_video_1_medium.ogv', 'sample_video_1.mp4',
-                      'sample_video_2.mp4', 'sample_video_2.avi',
-                      'sample_video_3.mp4', 'sample_video_3_medium.ogv',
-                      )
         subdir = os.path.join(self.td, "subfolder")
         os.mkdir(subdir)
         sampledata = os.path.join(os.path.dirname(__file__), 'sample_video_3.metadata')
@@ -369,7 +369,6 @@ class TestOnVideoHandling(unittest.TestCase):
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
-        #import pdb; pdb.set_trace()
         self.failUnless(view.playing_time == 'unknown')
 
     def test_fix_settings_url(self):
@@ -405,3 +404,30 @@ class TestOnVideoHandling(unittest.TestCase):
         self.failUnless(vo.thumbnailurl == '/++resource++on.video/invalidmetafile.png')
 
 
+    def test_add_video_without_title(self):
+        """Fill out the video 'add' form with the wrong date and notice
+           that it does not validate.
+        """
+        app = self.layer['app']
+        browser = Browser(app)
+        #browser.handleErrors = False
+        # get the relevant fields:
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            SITE_OWNER_NAME, SITE_OWNER_PASSWORD))
+        browser.open(self.portal.absolute_url() + '/++add++on.video.Video')
+        title_field = browser.getControl(name='form.widgets.title')
+        recorded_field_year = browser.getControl(name='form.widgets.recorded-year')
+        recorded_field_month = browser.getControl(name='form.widgets.recorded-month')
+        recorded_field_day = browser.getControl(name='form.widgets.recorded-day')
+        recorded_field_hour = browser.getControl(name='form.widgets.recorded-hour')
+        recorded_field_min = browser.getControl(name='form.widgets.recorded-min')
+        filename_field = browser.getControl(name='form.widgets.filename')
+        body_field = browser.getControl(name='form.widgets.body')
+        save_button = browser.getControl(name='form.buttons.save')
+        # fill the fields and save the form:
+        filename_field.value = u'sample_video_3'
+        body_field.value = u'<p>nothing to see here, move along</p>'
+        save_button.click()
+        #import pdb; pdb.set_trace()
+        vl = self.portal.keys()
+        #self.failUnless(True)

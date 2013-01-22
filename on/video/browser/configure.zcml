@@ -30,7 +30,6 @@
       description="List folder contents as a video gallery"
       />
 
-
   <browser:menuItem
       for="plone.app.collection.interfaces.ICollection"
       menu="plone_displayviews"

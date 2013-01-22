@@ -19,7 +19,7 @@
 
   <!-- Grok the package to initialise schema interfaces and content classes -->
   <grok:grok package="." />
-  
+
   <i18n:registerTranslations directory="locales" />
 
   <!-- Register an extension profile to make the product installable

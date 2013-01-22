@@ -1,6 +1,6 @@
 # schema etc. for videos
 
-# (c) 2012 oeko.net
+# (c) 2012-2013 oeko.net
 # c/o toni mueller <support@oeko.net>
 # license: GPLv3
 

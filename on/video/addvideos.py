@@ -1,4 +1,4 @@
-### copyright (c) 2012 Toni Mueller <support@oeko.net>
+### copyright (c) 2012-2013 Toni Mueller <support@oeko.net>
 ### AGPLv3 if possible, otherwise GPLv3 or later
 ### incorporates portions of code from ore.contentmirror
 

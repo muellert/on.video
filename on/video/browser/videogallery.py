@@ -1,7 +1,7 @@
 
 # gallery view for folders containing videos
 
-# (c) 2012 oeko.net
+# (c) 2012-2013 oeko.net
 # c/o toni mueller <support@oeko.net>
 # license: GPLv3
 
@@ -50,8 +50,7 @@ class FolderItems(object):
         self.filetype = self.calculateFileType(url)
         self.start = start
 
-
-def countFolderItems(item):
+def XXXXcountFolderItems(item):
     """item count to be shown in a folder / collection summary view
        Return a pair (folders, videos).
     """
@@ -76,6 +75,26 @@ def countFolderItems(item):
         
     return (counts['Folder'], counts['on.video.Video'])
 
+
+def countFolderItems(folder):
+    """Filter the given list of folder contents for those elements
+       that are intended to be shown in the video gallery, and
+       count them.
+       Return a pair (folders, videos).
+    """
+    folderlisting = folder.folderlistingFolderContents()
+    counts = { 'Folder': 0, 'on.video.Video': 0 }
+    for item in folderlisting:
+        if not item.portal_type in ('Folder', 'on.video.Video'):
+            continue
+        counts[item.portal_type] += 1
+        g = 0
+        v = 0
+        if item.portal_type == 'Folder':
+            (g, v) = countFolderItems(item)
+        counts['Folder'] += g
+        counts['on.video.Video'] += v
+    return (counts['Folder'], counts['on.video.Video'])
 
 def shorttitle(title):
     """shorten titles for gallery view"""
@@ -164,9 +183,7 @@ class VideoGallery(grok.View):
     def update(self):
         """Called before rendering the template for this view.
         """
-        fl = self.getFolderContents()
-        #import pdb; pdb.set_trace()
-
+        fl = [ x for x in self.getFolderContents() if x.id != 'bannerimage' ]
         b_start = int(self.context.REQUEST.get('b_start', 0))
         #print "VideoGallery() update: b_start = %d, fl = %s" % (b_start, str(fl))
         self.contents = Batch([ genSmallView(item, self.request) for item in fl ], size=12, start=b_start)

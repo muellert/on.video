@@ -170,3 +170,25 @@ class TestVideoGallery(unittest.TestCase):
             TEST_USER_NAME, TEST_USER_PASSWORD))
         browser.open(portalURL + '/testfolder')
         self.failUnless('789</h4>' in browser.contents)
+
+    def test_gallery_banner_image_excluded(self):
+        """Test that the title is not being cut off when it is short enough."""
+        portal = self.layer['portal']
+        portal.invokeFactory("Folder", id='videos', title='Galleries')
+        g = portal['videos']
+        for i in range(3):
+            g.invokeFactory("Folder", id='g%d' % i, title='Gallery #%d' % i)
+            subgallery = g['g%d' % i]
+            for j in range(3):
+                subgallery.invokeFactory('on.video.Video', id='video%d-%d' % (i, j), title='Video %d-%d' % (i, j))
+        g.invokeFactory('Image', id='bannerimage', title='Banner Image')
+        g.setLayout('videogallery')
+        transaction.commit()
+        app = self.layer['app']
+        browser = Browser(app)
+        portalURL = portal.absolute_url()
+        browser.addHeader('Authorization', 'Basic %s:%s' % (
+            TEST_USER_NAME, TEST_USER_PASSWORD))
+        browser.open(portalURL + '/videos')
+        import pdb; pdb.set_trace()
+        self.failIf('bannerimage' in browser.contents)

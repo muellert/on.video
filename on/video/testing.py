@@ -34,15 +34,12 @@ class OnVideoFixture(PloneSandboxLayer):
     def setUpZope(self, app, configurationContext):
         import on.video
         self.loadZCML(package=on.video)
-        self.loadZCML(package=Products.CMFPlone)
 
     def setUpPloneSite(self, portal):
         wftool = getToolByName(portal, 'portal_workflow')
         wftool.setDefaultChain('folder_workflow')
         """Run the GS profile for this product"""
         self.applyProfile(portal, 'on.video:default')
-        #import pdb; pdb.set_trace()
-
 
     def tearDownZope(self, app):
         """Uninstall the product and destroy the Zope site"""

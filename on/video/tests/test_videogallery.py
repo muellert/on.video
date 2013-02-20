@@ -190,5 +190,4 @@ class TestVideoGallery(unittest.TestCase):
         browser.addHeader('Authorization', 'Basic %s:%s' % (
             TEST_USER_NAME, TEST_USER_PASSWORD))
         browser.open(portalURL + '/videos')
-        import pdb; pdb.set_trace()
         self.failIf('bannerimage' in browser.contents)

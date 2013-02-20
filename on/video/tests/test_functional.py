@@ -7,6 +7,7 @@ from datetime import datetime
 from zope.component import queryUtility
 
 from plone.registry.interfaces import IRegistry
+from plone.app.textfield.value import RichTextValue
 
 from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
 
@@ -77,13 +78,14 @@ class TestOnVideoHandling(unittest.TestCase):
         """Create a video object and inspect its attributes to see whether
            it conforms to the specs.
         """
+        #import pdb; pdb.set_trace()
         v = self.portal.invokeFactory('on.video.Video', 'video1', title=u"My Sample Video",
                                       name = 'some kind of video',
                                       author = 'me, myself',
                                       recorded = datetime.now(),
                                       filename = 'sample_video_1',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -107,7 +109,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_2',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -126,7 +128,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'Vincent_Untz',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -146,7 +148,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_6',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -164,7 +166,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'no-metadata',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -187,7 +189,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'no-metadata',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -208,7 +210,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_4',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         import transaction; transaction.commit()
         app = self.layer['app']
         browser = Browser(app)
@@ -229,7 +231,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_3',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -248,7 +250,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_3',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         app = self.layer['app']
@@ -268,7 +270,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_3',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         app = self.layer['app']
@@ -290,7 +292,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'subfolder/sample_video_3',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -310,7 +312,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_3',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -328,7 +330,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_4',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -347,7 +349,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_5',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')
@@ -365,7 +367,7 @@ class TestOnVideoHandling(unittest.TestCase):
                                       recorded = datetime.now(),
                                       filename = 'sample_video_6',
                                       place = 'nirvana',
-                                      body = '<strong>some interesting story</strong>')
+                                      body = RichTextValue('<strong>some interesting story</strong>'))
         video = self.portal[v]
         import transaction; transaction.commit()
         view = video.restrictedTraverse('@@view')

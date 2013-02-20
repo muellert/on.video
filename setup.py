@@ -7,7 +7,8 @@ version = open(version_file).read().strip()
 setup(name='on.video',
       version=version,
       description="dynamic display of video files",
-      long_description=open("README.rst").read(),
+      long_description=open("README.rst").read() + \
+                       open("CHANGES.rst").read(),
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[

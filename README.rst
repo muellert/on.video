@@ -56,3 +56,12 @@ structure:
 
 You generate these files out-of-band in accord with your requirements for
 video hosting.
+
+
+Development
+-----------
+
+The project is mirrored at
+
+https://github.com/muellert/on.video .
+

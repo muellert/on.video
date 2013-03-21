@@ -8,7 +8,6 @@
                  'featuredvideos' folder.">
     <for interface="plone.app.portlets.interfaces.IColumn" />
     <for interface="plone.app.portlets.interfaces.IDashboard" />
-    <for interface="irill.policy.browser.manager.IMyBelowContent" />
   </portlet>
 
 </portlets>

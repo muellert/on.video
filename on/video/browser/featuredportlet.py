@@ -51,9 +51,6 @@ class IFeaturedVideos(IPortletDataProvider):
 class Assignment(base.Assignment):
     implements(IFeaturedVideos)
 
-    # header = _(u'x', default=u"Best Videos")
-    # entries = 3
-    
     def __init__(self,
                  header=u"",
                  target_collection=None,
@@ -129,6 +126,7 @@ class Renderer(base.Renderer):
                 vth = ViewThumbnail(iobj, iobj)            
                 rdict['thumbnail'] = vth.thumbnail()
                 rdict['title'] = vth.title()
+                rdict['id'] = vth.id
                 pictures.append(rdict)
         return pictures
 

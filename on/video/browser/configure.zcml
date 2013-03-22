@@ -13,7 +13,7 @@
   <include package="plone.app.portlets"/>
 
   <plone:portlet
-      name="irill.FeaturedVideos"
+      name="on.FeaturedVideos"
       interface=".featuredportlet.IFeaturedVideos"
       assignment=".featuredportlet.Assignment"
       renderer=".featuredportlet.Renderer"

@@ -2,10 +2,10 @@
 <portlets>
 
   <portlet 
-    addview="irill.FeaturedVideos"
+    addview="on.FeaturedVideos"
     title="Featured Videos"
-    description="A portlet which renders thumbnails of videos in the
-                 'featuredvideos' folder.">
+    description="A portlet which renders thumbnails of videos
+    contained in a given folder.">
     <for interface="plone.app.portlets.interfaces.IColumn" />
     <for interface="plone.app.portlets.interfaces.IDashboard" />
   </portlet>

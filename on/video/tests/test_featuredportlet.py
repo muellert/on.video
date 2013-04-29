@@ -17,6 +17,7 @@ from on.video.testing import ON_VIDEO_FUNCTIONAL_TESTING
 from plone.app.portlets.storage import PortletAssignmentMapping
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
+from plone.testing import z2
 
 from plone.app.layout.navigation.interfaces import INavigationRoot
 
@@ -30,10 +31,18 @@ class TestPortlet(unittest.TestCase):
         setHooks()
         self.portal = self.layer['portal']
         setRoles(self.portal, TEST_USER_ID, ['Manager'])
+        self.browser = z2.Browser(self.portal)
+
+    def tearDownZope(self, app):
+        # Uninstall product
+        z2.uninstallProduct(app, 'irill.theme')
 
     def testPortletTypeRegistered(self):
-        portlet = getUtility(IPortletType, name='irill.FeaturedVideos')
-        self.assertEquals(portlet.addview, 'irill.FeaturedVideos')
+        manager = getUtility(IPortletManager, name='plone.leftcolumn')
+        # portlet = getUtility(IPortletType, name='irill.FeaturedVideos')
+        # self.assertEquals(portlet.addview, 'irill.FeaturedVideos')
+        import pdb; pdb.set_trace()
+        self.failUnless('irill.FeaturedVideos' in manager)
 
     def testInterfaces(self):
         portlet = featuredportlet.Assignment()

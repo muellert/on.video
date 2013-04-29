@@ -34,7 +34,7 @@
 	       class="fvideo">
 	      <img tal:attributes="src vid/thumbnail; alt vid/title" />
               <div class="caption"
-                   tal:content="python:str(vid['title'])[0:20] + '...'">Title
+                   tal:content="python:vid['title'][0:20] + '...'">Title
               </div>
 	     </a>
            </li>

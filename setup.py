@@ -49,5 +49,6 @@ setup(name='on.video',
       target = plone
       """,
       #setup_requires=["PasteScript"],
+      setup_requires=['setuptools-git'],
       #paster_plugins = ["ZopeSkel"],
       )

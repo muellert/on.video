@@ -5,7 +5,10 @@ from zope import schema
 from zope.interface import implements
 from zope.formlib import form
 from zope.component import getMultiAdapter
-from zope.app.component.hooks import getSite
+try:
+    from zope.component.hooks import getSite
+except ImportError:
+    from zope.app.component.hooks import getSite
 
 from plone.app.portlets.portlets import base
 from plone.memoize.instance import memoize

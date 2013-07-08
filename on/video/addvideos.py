@@ -39,7 +39,10 @@ import transaction
 from Products.Five import zcml
 from zope.component import queryMultiAdapter
 from zope.component import queryUtility
-from zope.app.component.hooks import setSite
+try:
+    from zope.component.hooks import setSite
+except ImportError:
+    from zope.app.component.hooks import setSite
 from zope.i18n.interfaces import ITranslationDomain
 from zope.i18n.locales import locales
 from zope.interface import implements

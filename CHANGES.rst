@@ -4,11 +4,11 @@
 Changelog
 =========
 
+Version 0.2.2 (2013-06-14)
+--------------------------
 
-Version 0.1.1i (2012-11-28)
----------------------------
+ * Repair the source distribution to finally include all versioned files
 
-Initial "real" release
 
 Version 0.2 (2013-02-20)
 ------------------------
@@ -20,7 +20,8 @@ Version 0.2 (2013-02-20)
  * Added a portlet to show selected videos
  * Bugfixes
 
+Version 0.1.1i (2012-11-28)
+---------------------------
 
-
-
+Initial "real" release
 

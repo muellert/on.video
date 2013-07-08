@@ -39,10 +39,12 @@ class TestPortlet(unittest.TestCase):
 
     def testPortletTypeRegistered(self):
         manager = getUtility(IPortletManager, name='plone.leftcolumn')
-        # portlet = getUtility(IPortletType, name='irill.FeaturedVideos')
-        # self.assertEquals(portlet.addview, 'irill.FeaturedVideos')
-        import pdb; pdb.set_trace()
-        self.failUnless('irill.FeaturedVideos' in manager)
+        # import pdb; pdb.set_trace()
+        plist = manager.getAddablePortletTypes()
+        for i in plist:
+            if i == "Featured Videos":
+                return "Video portlet addable"
+        self.fail
 
     def testInterfaces(self):
         portlet = featuredportlet.Assignment()
@@ -50,7 +52,7 @@ class TestPortlet(unittest.TestCase):
         self.failUnless(IPortletDataProvider.providedBy(portlet.data))
 
     def testInvokeAddview(self):
-        portlet = getUtility(IPortletType, name='irill.FeaturedVideos')
+        portlet = getUtility(IPortletType, name='on.FeaturedVideos')
         mapping = self.portal.restrictedTraverse('++contextportlets++plone.leftcolumn')
         for m in mapping.keys():
             del mapping[m]

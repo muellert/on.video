@@ -511,7 +511,6 @@ def validateRecorded(value):
 
 #        raise schema.ValidationError(u"The video could not have been recorded in the future.")
 
-
 @form.validator(field=IVideo['title'])
 def validateTitle(value):
     """Ensure that the title has no leading or trailing spaces."""
@@ -519,3 +518,4 @@ def validateTitle(value):
     if len(title) == 0:
         raise Invalid(u"Title must not be empty.")
     return title
+

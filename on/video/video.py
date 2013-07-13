@@ -275,16 +275,13 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     ### context = video object, context.filename = relative path to the metadata
     if '/' in filename:
         vo.urlprefix = filename[:filename.rfind('/')]
-
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
+    vo.thumbnailurl = None
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(vo)
         vo.thumbnailurl = '/++resource++on.video/nometafile.png'
         return vo
-
-    vo.thumbnailurl = None
-    #import pdb; pdb.set_trace()
     try:
         line = lines.pop(0)
         if line[0] == 'thumbnail' and len(line) > 1 and line[1] != '':
@@ -362,7 +359,6 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     #print "\tvideo dimensions before handling files: x = %d, y = %d" % (vo.x, vo.y)
     vo.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in vo.playfiles ]
-    #vo.directplay = vo.playfiles[0]
     if len(vo.playfiles) == 0:
         setDefaultNoVideoValues(vo)
     else:
@@ -370,6 +366,8 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     # deep copy!!!
     downloadlist = vo.playfiles[:]
     vo.videos = sortVideosForDownload(downloadlist)
+    if vo.thumbnailurl is None:
+        vo.thumbnailurl = '/++resource++on.video/nothumbnail.png'
     #print "*** readVideoMetaData() done, video dimensions: x = %d, y = %d" % (vo.x, vo.y)
     return vo
 
@@ -498,7 +496,9 @@ def validateFilename(value):
     #    raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
     logging.info(pprint(vo))
     if '/++resource++on.video/' in vo.thumbnailurl and \
-           vo.thumbnailurl != '/++resource++on.video/nothumbnail.png':
+           vo.thumbnailurl not in ('/++resource++on.video/nothumbnail.png',
+                                   '/++resource++on.video/novideo.png',
+                                   ):
         raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
 
 

@@ -6,6 +6,8 @@
 
 
 import logging
+from pprint import pprint
+
 from five import grok
 from zope import schema
 from zope.interface import Interface, Invalid
@@ -18,11 +20,6 @@ from Products.CMFCore.utils import getToolByName
 from plone.memoize.instance import memoize
 from plone.app.textfield import RichText
 
-from plone.app.layout.globals.interfaces import IViewView
-from plone.app.layout.viewlets.interfaces import IBelowContent
-from plone.app.layout.viewlets.interfaces import IBelowContentBody
-
-from Products.Archetypes.interfaces.base import IBaseContent
 
 from datetime import datetime
 
@@ -280,13 +277,13 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         vo.urlprefix = filename[:filename.rfind('/')]
 
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
+    vo.thumbnailurl = None
     if not os.path.exists(meta_path):
         #print "no metadata for ", context
         setDefaultNoVideoValues(vo)
         vo.thumbnailurl = '/++resource++on.video/nometafile.png'
         return vo
 
-    vo.thumbnailurl = None
     #import pdb; pdb.set_trace()
     try:
         line = lines.pop(0)
@@ -373,6 +370,8 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     # deep copy!!!
     downloadlist = vo.playfiles[:]
     vo.videos = sortVideosForDownload(downloadlist)
+    if vo.thumbnailurl is None:
+        vo.thumbnailurl = '/++resource++on.video/nothumbnail.png'
     #print "*** readVideoMetaData() done, video dimensions: x = %d, y = %d" % (vo.x, vo.y)
     return vo
 
@@ -475,6 +474,23 @@ class View(grok.View):
 
 
 
+@form.validator(field=IVideo['recorded'])
+def validateRecorded(value):
+    """Raise an exception if the recording date lies in the future."""
+    if value is not None and value > datetime.now():
+        raise Invalid(u"The video cannot have been recorded in the future.")
+
+
+@form.validator(field=IVideo['title'])
+def validateTitle(value):
+    """Ensure that the title has no leading or trailing spaces."""
+    title = value.strip()
+    if len(title) == 0:
+        raise Invalid(u"Title must not be empty.")
+    return title
+
+
+
 # As per issue #469, bail out if the metadata file does not exist:
 
 @form.validator(field=IVideo['filename'])
@@ -483,6 +499,7 @@ def validateFilename(value):
     registry = queryUtility(IRegistry)
     settings = registry.forInterface(IVideoConfiguration)
     meta_path = genAbsolutePathToMetaFile(settings.fspath, value)
+    print "in validateFilename"
     accessible = True
     try:
         fp = open(meta_path, "r")
@@ -496,26 +513,20 @@ def validateFilename(value):
     lines = getMetaDataFileLines(settings.fspath, value)
     vo = parseMetadataFileContents(lines, settings.urlbase,
                                    settings.fspath, value)
+    #import pdb; pdb.set_trace()
     #if vo.thumbnailurl == '/++resource++on.video/novideo.png':
     #    raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
+    logging.debug(pprint(vo))
     if '/++resource++on.video/' in vo.thumbnailurl and \
-           vo.thumbnailurl != '/++resource++on.video/nothumbnail.png':
+           vo.thumbnailurl not in ('/++resource++on.video/nothumbnail.png',
+                                   '/++resource++on.video/novideo.png',
+                                   ):
         raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
 
 
-@form.validator(field=IVideo['recorded'])
-def validateRecorded(value):
-    """Raise an exception if the recording date lies in the future."""
-    if value is not None and value > datetime.now():
-        raise Invalid(u"The video could not have been recorded in the future.")
 
-#        raise schema.ValidationError(u"The video could not have been recorded in the future.")
+# from plone.app.layout.globals.interfaces import IViewView
+# from plone.app.layout.viewlets.interfaces import IBelowContent
+# from plone.app.layout.viewlets.interfaces import IBelowContentBody
 
-@form.validator(field=IVideo['title'])
-def validateTitle(value):
-    """Ensure that the title has no leading or trailing spaces."""
-    title = value.strip()
-    if len(title) == 0:
-        raise Invalid(u"Title must not be empty.")
-    return title
-
+# from Products.Archetypes.interfaces.base import IBaseContent

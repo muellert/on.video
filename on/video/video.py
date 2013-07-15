@@ -274,7 +274,6 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
 
     if '/' in filename:
         vo.urlprefix = filename[:filename.rfind('/')]
-
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     vo.thumbnailurl = None
     if not os.path.exists(meta_path):
@@ -282,7 +281,6 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
         setDefaultNoVideoValues(vo)
         vo.thumbnailurl = '/++resource++on.video/nometafile.png'
         return vo
-
     #import pdb; pdb.set_trace()
     try:
         line = lines.pop(0)
@@ -361,7 +359,6 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     #print "\tvideo dimensions before handling files: x = %d, y = %d" % (vo.x, vo.y)
     vo.playfiles = sortVideosForPlayer(vlist, directplay)
     #print "*** readVideoMetaData(): videos for player, types: ", [ r.filetype for r in vo.playfiles ]
-    #vo.directplay = vo.playfiles[0]
     if len(vo.playfiles) == 0:
         setDefaultNoVideoValues(vo)
     else:
@@ -472,7 +469,6 @@ class View(grok.View):
         return config
 
 
-
 @form.validator(field=IVideo['recorded'])
 def validateRecorded(value):
     """Raise an exception if the recording date lies in the future."""
@@ -487,7 +483,6 @@ def validateTitle(value):
     if len(title) == 0:
         raise Invalid(u"Title must not be empty.")
     return title
-
 
 
 # As per issue #469, bail out if the metadata file does not exist:
@@ -524,9 +519,3 @@ def validateFilename(value):
         raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
 
 
-
-# from plone.app.layout.globals.interfaces import IViewView
-# from plone.app.layout.viewlets.interfaces import IBelowContent
-# from plone.app.layout.viewlets.interfaces import IBelowContentBody
-
-# from Products.Archetypes.interfaces.base import IBaseContent

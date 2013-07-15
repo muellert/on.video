@@ -272,14 +272,13 @@ def parseMetadataFileContents(lines, urlbase, fspath, filename, vo = O(), player
     
     vo.urlprefix = ""
 
-    ### context = video object, context.filename = relative path to the metadata
     if '/' in filename:
         vo.urlprefix = filename[:filename.rfind('/')]
 
     meta_path = genAbsolutePathToMetaFile(fspath, filename)
     vo.thumbnailurl = None
     if not os.path.exists(meta_path):
-        #print "no metadata for ", context
+        logging.debug("no metadata file at %s" % meta_path)
         setDefaultNoVideoValues(vo)
         vo.thumbnailurl = '/++resource++on.video/nometafile.png'
         return vo
@@ -499,7 +498,8 @@ def validateFilename(value):
     registry = queryUtility(IRegistry)
     settings = registry.forInterface(IVideoConfiguration)
     meta_path = genAbsolutePathToMetaFile(settings.fspath, value)
-    print "in validateFilename"
+    logging.debug("\nin validateFilename, meta_path = %s" % meta_path)
+    #import pdb; pdb.set_trace()
     accessible = True
     try:
         fp = open(meta_path, "r")
@@ -516,7 +516,7 @@ def validateFilename(value):
     #import pdb; pdb.set_trace()
     #if vo.thumbnailurl == '/++resource++on.video/novideo.png':
     #    raise Invalid(u"Corrupt video metadata file at %s" % meta_path)
-    logging.debug(pprint(vo))
+    # logging.debug(pprint(vo))
     if '/++resource++on.video/' in vo.thumbnailurl and \
            vo.thumbnailurl not in ('/++resource++on.video/nothumbnail.png',
                                    '/++resource++on.video/novideo.png',
